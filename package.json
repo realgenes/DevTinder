@@ -1,0 +1,16 @@
+{
+  "name": "devtinder",
+  "version": "1.0.0",
+  "description": "Tinder for developers",
+  "license": "ISC",
+  "author": "Shishupal Singh",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+   "start":"node src/app.js",
+   "dev":"nodemon src/app.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
