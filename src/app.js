@@ -3,21 +3,16 @@ const express = require("express");
 const app = express();
 
 
-app.get("/user", (req, res) => {
+
+// app.get("/user", (req, res) => {
+//   res.send({firstName:"Devil", lastName:"World"})
+// })
+
+
+app.get("/user/:userId/:name/:password", (req, res) => {
+  console.log(req.params);
   res.send({firstName:"Devil", lastName:"World"})
 })
-
-app.post("/user", (req, res) => {
-  res.send("Data saved successfully!");
-});
-
-app.delete("/user", (req, res) => {
-  res.send("Data deleted successfully!");
-});
-
-app.use("/test", (req, res) => {
-  res.send("Tester from Devil!");
-});
 
 
 
