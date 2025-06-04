@@ -2,20 +2,25 @@ const express = require("express");
 
 const app = express();
 
-app.use('/express',(req,res) => {
-  res.send("this is express server")
+app.get("/home", (req,res) => {
+  res.send({ "firstName": "Shishupal", "lastName": "Singh" });
 })
 
-app.use('/home',(req,res) => {
-  res.send('This is home page')
+app.patch('/home',(req,res) => {
+  res.send("Data patched succcessfully");
 })
 
-app.use('/evo',(req,res) => {
-  res.send('this is evo')
+app.put('/home', (req,res) => {
+  res.send("data putted succesfully");
+})
+
+app.post('/home', (req, res) => {
+  console.log("This is post call");
+  res.send("data successfull send to DB");
 })
 
 
 
-app.listen(3000, () => {
-  console.log("Server is listening on port 3000");
+app.listen(7777, () => {
+  console.log("Server is listening on port 7777");
 });
