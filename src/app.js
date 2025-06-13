@@ -60,6 +60,31 @@ app.get("/feed",async(req,res) => {
   }
 })
 
+//delete user api
+app.delete('/user', async(req,res) => {
+  const userId = req.body.userId
+  
+  try {
+    const user = await User.findByIdAndDelete(userId);
+    res.send('user deleted!')
+  } catch (error) {
+    res.status(401).send('error')
+  }
+})
+
+//update user details api
+app.patch('/user', async(req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+
+  try {
+    const before = await User.findByIdAndUpdate({ _id: userId }, data);
+    console.log(before);
+    res.send('user updated successfully')
+  } catch (error) {
+    res.send('Some error there!');
+  }
+})
 
 
 
