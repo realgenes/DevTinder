@@ -77,16 +77,41 @@ app.patch('/user', async (req, res) => {
   const userId = req.body.userId;
   const data = req.body;
 
+ 
+
   try {
+    const ALLOWED_UPDATES = [
+      "firstName",
+      "lastName",
+      "photoUrl",
+      "gender",
+      "about",
+      "skills",
+      "userId",
+    ];
+
+    const isUpdate_Allowed = Object.keys(data).every((k) => {
+      return ALLOWED_UPDATES.includes(k);
+    });
+
+    if (data.skills.length > 10) {
+      throw new Error("more than 10 skills not allowed!")
+    }
+
+    if (!isUpdate_Allowed) {
+      throw new Error("update not allowed!");
+    } 
     const before = await User.findByIdAndUpdate({ _id: userId }, data, {
       runValidators: true,
-      returnDocument: "after"
+      returnDocument: "after",
     });
     console.log(before);
-    res.send('user updated successfully')
+    res.send("user updated successfully");
   } catch (error) {
-    res.status(400).send("Some error there!" + error.message);
+    res.status(400).send("Error! " + error.message);
   }
+
+  
 });
 
 
