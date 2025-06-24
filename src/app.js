@@ -7,14 +7,12 @@ const{validateSignUpData} = require('./utils/validation')
 
 app.use(express.json());
 
-app.post("/signup", async (req, res) => { 
-
-
+app.post("/signup", async (req, res) => {
   try {
     //validate data
     validateSignUpData(req);
 
-    const { password, firstName, lastName, emailId, skills, age,gender } = req.body;
+    const { password, firstName, lastName, emailId, skills, age, gender } = req.body;
 
     //encrypting password
     const passwordHash = await bcrypt.hash(password, 10);
@@ -36,6 +34,38 @@ app.post("/signup", async (req, res) => {
     res.status(400).send('Error :' + err.message);
   }
 
+});
+
+//sign in api
+app.post("/login",async(req, res) => {
+  try {
+    const { emailId, password } = req.body;
+
+    if (!emailId || !password) {
+      throw new Error('emailId and password are required!');
+    }
+
+    const user = await User.findOne({ emailId: emailId });
+
+    if (!user) {
+      throw new Error('Invalid credintials!')
+    }
+
+    if (!user.password) {
+      throw new Error('User password not set in DB');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (isPasswordValid) {
+      res.send('login successful !');
+    } else {
+      throw new Error('password is not valid !')
+    }
+    
+  } catch (error) {
+    res.status(400).send("ERROR: " + error.message);
+  }
 })
 
 //get user data using email
@@ -84,7 +114,6 @@ app.get("/feed",async(req,res) => {
 //delete user api
 app.delete('/user', async(req,res) => {
   const userId = req.body.userId
-  
   try {
     const user = await User.findByIdAndDelete(userId);
     res.send('user deleted!')
@@ -97,9 +126,6 @@ app.delete('/user', async(req,res) => {
 app.patch('/user', async (req, res) => {
   const userId = req.body.userId;
   const data = req.body;
-
- 
-
   try {
     const ALLOWED_UPDATES = [
       "firstName",
