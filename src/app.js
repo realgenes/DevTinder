@@ -88,6 +88,8 @@ app.patch('/user', async (req, res) => {
       "about",
       "skills",
       "userId",
+      "emailId",
+      "password"
     ];
 
     const isUpdate_Allowed = Object.keys(data).every((k) => {

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator")
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -14,10 +15,20 @@ const userSchema = new mongoose.Schema({
     lowercase:true,
     required: true,
     unique: true,
-    trim:true,
+    trim: true,
+    validate(value) {
+      if (!validator.isEmail(value)) {
+        throw new Error("invalid email address!: " + value);
+      }
+    },
   },
   password: {
     type: String,
+    validate(value) {
+      if (!validator.isStrongPassword(value)) {
+        throw new Error("enter strong password! " + value)
+      }
+    },
   },
   age: {
     type: Number,
@@ -33,6 +44,11 @@ const userSchema = new mongoose.Schema({
   photoUrl: {
     type: String,
     default: "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png",
+    validate(value) {
+      if (!validator.isURL(value)) {
+        throw new Error("invalid photoURL"+ value)
+      }
+    }
   },
   about: {
     type: String,
