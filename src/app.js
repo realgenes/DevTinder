@@ -3,10 +3,14 @@ const connectDB =   require("./config/database");
 const app = express();
 const User = require('./models/user');
 const bcrypt = require('bcrypt');
+const cookieParser = require("cookie-parser")
+const jwt = require("jsonwebtoken");
 const{validateSignUpData} = require('./utils/validation')
 
 app.use(express.json());
+app.use(cookieParser());
 
+//sign up api
 app.post("/signup", async (req, res) => {
   try {
     //validate data
@@ -36,8 +40,8 @@ app.post("/signup", async (req, res) => {
 
 });
 
-//sign in api
-app.post("/login",async(req, res) => {
+//login api
+app.post("/login", async (req, res) => {
   try {
     const { emailId, password } = req.body;
 
@@ -58,6 +62,12 @@ app.post("/login",async(req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (isPasswordValid) {
+      //create a jwt token
+      const token = await jwt.sign({ _id: user._id }, "Dev@tinder23");
+
+      //add token to cookie
+      res.cookie("token", token);
+
       res.send('login successful !');
     } else {
       throw new Error('password is not valid !')
@@ -66,10 +76,42 @@ app.post("/login",async(req, res) => {
   } catch (error) {
     res.status(400).send("ERROR: " + error.message);
   }
+});
+
+//profile api
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+
+    const { token } = cookies;
+
+    if (!token) {
+      throw new Error('invalid token')
+    }
+    //validate the token
+    const decodedData = await jwt.verify(token, "Dev@tinder23");
+
+    
+    const { _id } = decodedData;
+    const user = await User.findById({ _id: _id });
+
+    if (!user) {
+      throw new Error("user not found!");
+    }
+    console.log("loggedin user :" + user);
+
+    //add token to cookie and send the response back to the server
+    res.send("reading cookies");
+    
+  } catch (error) {
+    res.status(400).send("ERROR: " + error.message);
+  }
+
+ 
 })
 
-//get user data using email
 
+//get user data using email
 app.get("/user", async (req, res) => {
   const userEmail = req.body.emailId;
 
@@ -154,7 +196,7 @@ app.patch('/user', async (req, res) => {
       runValidators: true,
       returnDocument: "after",
     });
-    console.log(before);
+
     res.send("user updated successfully");
   } catch (error) {
     res.status(400).send("Error! " + error.message);
