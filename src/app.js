@@ -60,14 +60,11 @@ app.post("/login", async (req, res) => {
       throw new Error('User password not set in DB');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
 
     if (isPasswordValid) {
       //create a jwt token
-      const token = await jwt.sign({ _id: user._id }, "Dev@tinder23", {
-        expiresIn: "7d",
-      });
-
+      const token = await user.getJWT();
       //add token to cookie
       res.cookie("token", token, {
         expires: new Date(Date.now() + 1* 3600000),
@@ -122,9 +119,7 @@ connectDB()
       console.log("Server is listening on port 7777");
     });
   })
-  .catch((err) => {
-    console.error("Database can not be established..");
-  });
+  
 
 
 
