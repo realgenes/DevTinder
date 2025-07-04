@@ -9,7 +9,7 @@
 ## profile router
 - GET /profile/view
 - PATCH /profile/edit
-- PATCH /profile/password
+- PATCH /profile/password // forgot password
 
 ## connection request router
 - POST /request/send/interested/:userID
