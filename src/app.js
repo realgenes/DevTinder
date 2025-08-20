@@ -1,6 +1,7 @@
 const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
+const mongoose = require('mongoose');
 const cookieParser = require("cookie-parser")
 
 
@@ -15,6 +16,7 @@ app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 
+mongoose.set("debug", true);
 
 
 connectDB()
