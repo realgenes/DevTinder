@@ -5,16 +5,16 @@ const connectionRequestSchema = new mongoose.Schema(
     fromUserId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref:"User"// refrence to the user collection
+      ref: "User", // refrence to the user collection
     },
 
     toUserId: {
       type: mongoose.Schema.Types.ObjectId,
-      required:true,
+      required: true,
     },
     status: {
       type: String,
-      required:true,
+      required: true,
       enum: {
         values: ["ignored", "interested", "accepted", "rejected"],
         message: `{VALUE} is incorrect status type`,
@@ -38,7 +38,8 @@ const connectionRequestSchema = new mongoose.Schema(
 connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
 
 const ConnectionRequestModel = new mongoose.model(
-  "ConnectionRequest",connectionRequestSchema
-)
+  "ConnectionRequest",
+  connectionRequestSchema
+);
 
 module.exports = ConnectionRequestModel;
