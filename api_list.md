@@ -22,7 +22,7 @@
 - GET /user/connections
 - GET /user/request
 - GET /user/feed profile of other users
+- feed api
 
-## user Router
 
 - 
