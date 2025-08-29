@@ -10,9 +10,21 @@ const Connections = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Add CSS for hiding scrollbars
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
   const fetchConnections = async () => {
     try {
-      const res = await axios.get(BASE_URL + "/user/connections", {
+      const res = await axios.get(BASE_URL + "/connections", {
         withCredentials: true,
       });
       dispatch(addConnection(res.data.data));
@@ -33,71 +45,86 @@ const Connections = () => {
   if (error) return <div className="alert alert-error">{error}</div>;
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="flex justify-center mb-8">
-        <h1 className="text-4xl font-bold">My Connections</h1>
+    <div className="min-h-screen flex flex-col">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0 p-6 pb-4">
+        <div className="flex justify-center">
+          <h1 className="text-4xl font-bold">My Connections</h1>
+        </div>
       </div>
 
-      {!connections || connections.length === 0 ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="text-center">
-            <h2 className="text-2xl mb-4">No connections found</h2>
-            <p className="text-gray-500">
-              You haven't connected with anyone yet.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="max-w-2xl mx-auto space-y-4">
-          {connections.map((connection) => (
-            <div
-              key={connection._id}
-              className="flex bg-base-300 shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
-            >
-              {/* Photo */}
-              <div className="flex-shrink-0 mr-4">
-                <img
-                  src={connection.photoUrl}
-                  alt={`${connection.firstName} ${connection.lastName}`}
-                  className="w-20 h-20 object-cover rounded-full"
-                />
-              </div>
-
-              {/* Content */}
-              <div className="flex-grow">
-                {/* Name */}
-                <h2 className="text-lg font-bold mb-1">
-                  {connection.firstName} {connection.lastName}
-                </h2>
-
-                {/* Age and Gender */}
-                {(connection.age || connection.gender) && (
-                  <p className="text-sm opacity-75 mb-2">
-                    {connection.age && `${connection.age} years old`}
-                    {connection.age && connection.gender && " • "}
-                    {connection.gender}
-                  </p>
-                )}
-
-                {/* About */}
-                {connection.about && (
-                  <p className="text-sm opacity-80 mb-3 leading-relaxed">
-                    {connection.about.length > 120
-                      ? connection.about.substring(0, 120) + "..."
-                      : connection.about}
-                  </p>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex-shrink-0 flex flex-col gap-2 ml-4">
-                <button className="btn btn-primary btn-sm">View Profile</button>
-                <button className="btn btn-outline btn-sm">Message</button>
-              </div>
+      {/* Scrollable Content - Limited to 4 items height */}
+      <div className="flex-1 px-6 pb-6">
+        {!connections || connections.length === 0 ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <h2 className="text-2xl mb-4">No connections found</h2>
+              <p className="text-gray-500">
+                You haven't connected with anyone yet.
+              </p>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="max-w-2xl mx-auto">
+            <div
+              className="space-y-4 overflow-y-auto overflow-x-hidden scrollbar-hide"
+              style={{
+                maxHeight: "calc(4 * (140px + 16px))", // 4 cards * (estimated card height + gap)
+                scrollbarWidth: "none" /* Firefox */,
+                msOverflowStyle: "none" /* IE and Edge */,
+              }}
+            >
+              {connections.map((connection) => (
+                <div
+                  key={connection._id}
+                  className="flex bg-base-300 shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
+                >
+                  {/* Photo */}
+                  <div className="flex-shrink-0 mr-4">
+                    <img
+                      src={connection.photoUrl}
+                      alt={`${connection.firstName} ${connection.lastName}`}
+                      className="w-20 h-20 object-cover rounded-full"
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-grow">
+                    {/* Name */}
+                    <h2 className="text-lg font-bold mb-1">
+                      {connection.firstName} {connection.lastName}
+                    </h2>
+
+                    {/* Age and Gender */}
+                    {(connection.age || connection.gender) && (
+                      <p className="text-sm opacity-75 mb-2">
+                        {connection.age && `${connection.age} years old`}
+                        {connection.age && connection.gender && " • "}
+                        {connection.gender}
+                      </p>
+                    )}
+
+                    {/* About */}
+                    {connection.about && (
+                      <p className="text-sm opacity-80 mb-3 leading-relaxed">
+                        {connection.about.length > 120
+                          ? connection.about.substring(0, 120) + "..."
+                          : connection.about}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex-shrink-0 flex flex-col gap-2 ml-4">
+                    <button className="btn btn-primary btn-sm">View Profile</button>
+                    <button className="btn btn-outline btn-sm">Message</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -61,10 +61,10 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to={"/user/connections"}>Connections</Link>
+                  <Link to={"/connections"}>Connections</Link>
                 </li>
                 <li>
-                  <Link to={"/request"}>Request receieved</Link>
+                  <Link to={"/requests/received"}>Request receieved</Link>
                 </li>
                 <li>
                   <Link onClick={handleLogout}>Logout</Link>
