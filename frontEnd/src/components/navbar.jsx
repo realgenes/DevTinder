@@ -64,7 +64,7 @@ const Navbar = () => {
                   <Link to={"/connections"}>Connections</Link>
                 </li>
                 <li>
-                  <Link to={"/requests/received"}>Request receieved</Link>
+                  <Link to={"/requests/received"}>Request received</Link>
                 </li>
                 <li>
                   <Link onClick={handleLogout}>Logout</Link>

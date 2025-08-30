@@ -23,22 +23,16 @@ const Request = () => {
     return () => document.head.removeChild(style);
   }, []);
 
-  // Prevent body scroll when component mounts
-  useEffect(() => {
-    // Remove body scroll prevention since we need to see footer
-    // document.body.style.overflow = 'hidden';
-    // return () => {
-    //   document.body.style.overflow = 'auto';
-    // };
-  }, []);
-
   const fetchRequest = async () => {
+    if (requests && requests.length > 0) {
+      setLoading(false);
+      return;
+    }
     try {
       const res = await axios.get(BASE_URL + "/requests/received", {
         withCredentials: true,
       });
       dispatch(addRequests(res.data.data));
-      console.log(res.data.data);
     } catch (error) {
       console.error("Error fetching requests requests", error);
       setError(error.response?.data?.message || error.message);
@@ -51,15 +45,24 @@ const Request = () => {
     fetchRequest();
   }, []);
 
-  const handleAcceptRequest = async () => {
+  const handleRequestReview = async (status, requestId) => {
     try {
-      const res = await axios.post(BASE_URL + "/request/review/accepted/"+ requests._id);
-    } catch (error) {
-      console.error(error);
-    }
-  }
+      const res = await axios.post(
+        BASE_URL + "/request/review/" + status + "/" + requestId,
+        {},
+        { withCredentials: true }
+      );
 
-  console.log("Redux requests:", requests); // Add this debug line
+
+      // Remove the accepted or rejected request from the list
+      const updatedRequests = requests.filter((req) => req._id !== requestId);
+      dispatch(addRequests(updatedRequests));
+      
+    } catch (error) {
+      console.error("Error accepting request:", error);
+      setError(error.response?.data?.message || "Failed to accept request");
+    }
+  };
 
   if (loading)
     return <div className="loading loading-spinner loading-lg"></div>;
@@ -138,8 +141,22 @@ const Request = () => {
 
                     {/* Actions */}
                     <div className="flex-shrink-0 flex flex-col gap-2 ml-4">
-                      <button className="btn btn-primary btn-sm" onClick={handleAcceptRequest} >Accept</button>
-                      <button className="btn btn-error btn-sm">Reject</button>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() =>
+                          handleRequestReview("accepted", request._id)
+                        }
+                      >
+                        Accept
+                      </button>
+                      <button
+                        className="btn btn-error btn-sm"
+                        onClick={() =>
+                          handleRequestReview("rejected", request._id)
+                        }
+                      >
+                        Reject
+                      </button>
                     </div>
                   </div>
                 );
