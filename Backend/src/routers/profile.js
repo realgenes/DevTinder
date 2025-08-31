@@ -1,6 +1,6 @@
 const express = require("express");
 const User = require("../models/user");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const { userAuth } = require("../middlewares/auth");
 const profileRouter = express.Router();
 const validator = require("validator");
@@ -24,9 +24,33 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     const loggedInUser = req.user;
     console.log(loggedInUser);
 
-    Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
+    // Filter out null, undefined, or empty string values for gender and age
+    const updateData = { ...req.body };
 
-    loggedInUser.save();
+    // Handle gender field - remove if empty or null
+    if (
+      updateData.gender === "" ||
+      updateData.gender === null ||
+      updateData.gender === undefined
+    ) {
+      delete updateData.gender;
+    }
+
+    // Handle age field - remove if empty, null, or invalid
+    if (
+      updateData.age === "" ||
+      updateData.age === null ||
+      updateData.age === undefined ||
+      isNaN(updateData.age)
+    ) {
+      delete updateData.age;
+    }
+
+    Object.keys(updateData).forEach(
+      (key) => (loggedInUser[key] = updateData[key])
+    );
+
+    await loggedInUser.save();
 
     res.json({
       message: `${loggedInUser.firstName}, your profile updated successfully`,
@@ -48,8 +72,8 @@ profileRouter.patch("/profile/update-password", userAuth, async (req, res) => {
 
     if (oldPassword === newPassword) {
       return res.status(400).json({
-        error:"old and new passwords should not be same!"
-      })
+        error: "old and new passwords should not be same!",
+      });
     }
 
     if (!validator.isStrongPassword(newPassword)) {
@@ -59,14 +83,14 @@ profileRouter.patch("/profile/update-password", userAuth, async (req, res) => {
     }
 
     const userEmailId = req.user.emailId;
-    const user = await User.findOne({emailId:userEmailId});
+    const user = await User.findOne({ emailId: userEmailId });
 
     if (!user) {
       return res.status(404).json({ error: "user not found" });
     }
 
     const isSame = await bcrypt.compare(oldPassword, user.password);
-    
+
     if (!isSame) {
       return res.status(401).json({ error: "Old password is incorrect !" });
     }
@@ -77,10 +101,8 @@ profileRouter.patch("/profile/update-password", userAuth, async (req, res) => {
     user.password = hashedPassword;
     await user.save();
     res.status(200).json({ message: "Password updated successfully !" });
-
-
   } catch (err) {
-    res.json({error:"something wrong !"+err})
+    res.json({ error: "something wrong !" + err });
   }
 });
 

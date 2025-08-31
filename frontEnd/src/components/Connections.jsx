@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnection } from "../utils/connectionSlice";
+import { useNavigate } from "react-router-dom";
 
 const Connections = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const connections = useSelector((store) => store.connections);
+  const user = useSelector((store) => store.user);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -24,13 +27,39 @@ const Connections = () => {
 
   const fetchConnections = async () => {
     try {
+      setError(""); // Clear any previous errors
       const res = await axios.get(BASE_URL + "/connections", {
         withCredentials: true,
       });
-      dispatch(addConnection(res.data.data));
+
+      // Validate the response data
+      const connectionsData = res.data.data;
+      if (Array.isArray(connectionsData)) {
+        // Filter out any null/undefined connections
+        const validConnections = connectionsData.filter(
+          (connection) => connection && connection._id
+        );
+        dispatch(addConnection(validConnections));
+      } else {
+        console.warn("Invalid connections data received:", connectionsData);
+        dispatch(addConnection([]));
+      }
     } catch (error) {
       console.error("Error fetching connections:", error);
-      setError(error.message);
+
+      if (error.response?.status === 401) {
+        // User is not authenticated, redirect to login
+        setError("Please log in to view connections");
+        navigate("/login");
+      } else if (error.response?.status === 400) {
+        setError("Bad request. Please check your authentication.");
+      } else {
+        setError(
+          error.response?.data?.message ||
+            error.message ||
+            "Failed to fetch connections"
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -43,8 +72,14 @@ const Connections = () => {
   };
 
   useEffect(() => {
-    fetchConnections();
-  }, []);
+    // Only fetch connections if user is logged in
+    if (user) {
+      fetchConnections();
+    } else {
+      setLoading(false);
+      setError("Please log in to view connections");
+    }
+  }, [user]);
 
   if (loading)
     return <div className="loading loading-spinner loading-lg"></div>;
@@ -56,7 +91,6 @@ const Connections = () => {
       <div className="flex-shrink-0 p-6 pb-4">
         <div className="flex justify-center items-center gap-4">
           <h1 className="text-4xl font-bold">My Connections</h1>
-          
         </div>
       </div>
 
@@ -81,61 +115,69 @@ const Connections = () => {
                 msOverflowStyle: "none" /* IE and Edge */,
               }}
             >
-              {connections.map((connection, index) => {
-                return (
-                  <div
-                    key={
-                      connection._id || connection.id || `connection-${index}`
-                    }
-                    className="flex bg-base-300 shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
-                  >
-                    {/* Photo */}
-                    <div className="flex-shrink-0 mr-4">
-                      <img
-                        src={connection.photoUrl}
-                        alt={`${connection.firstName} ${connection.lastName}`}
-                        className="w-20 h-20 object-cover rounded-full"
-                      />
+              {connections
+                .filter((connection) => connection && connection._id) // Filter out null/undefined connections
+                .map((connection, index) => {
+                  return (
+                    <div
+                      key={
+                        connection._id || connection.id || `connection-${index}`
+                      }
+                      className="flex bg-base-300 shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
+                    >
+                      {/* Photo */}
+                      <div className="flex-shrink-0 mr-4">
+                        <img
+                          src={
+                            connection.photoUrl ||
+                            "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"
+                          }
+                          alt={`${connection.firstName || "User"} ${
+                            connection.lastName || ""
+                          }`}
+                          className="w-20 h-20 object-cover rounded-full"
+                        />
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-grow">
+                        {/* Name */}
+                        <h2 className="text-lg font-bold mb-1">
+                          {connection.firstName || "Unknown"}{" "}
+                          {connection.lastName || "User"}
+                        </h2>
+
+                        {/* Age and Gender */}
+                        {(connection.age || connection.gender) && (
+                          <p className="text-sm opacity-75 mb-2">
+                            {connection.age && `${connection.age} years old`}
+                            {connection.age && connection.gender && " • "}
+                            {connection.gender}
+                          </p>
+                        )}
+
+                        {/* About */}
+                        {connection.about && (
+                          <p className="text-sm opacity-80 mb-3 leading-relaxed">
+                            {connection.about.length > 120
+                              ? connection.about.substring(0, 120) + "..."
+                              : connection.about}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex-shrink-0 flex flex-col gap-2 ml-4">
+                        <button className="btn btn-primary btn-sm">
+                          View Profile
+                        </button>
+                        <button className="btn btn-outline btn-sm">
+                          Message
+                        </button>
+                      </div>
                     </div>
-
-                    {/* Content */}
-                    <div className="flex-grow">
-                      {/* Name */}
-                      <h2 className="text-lg font-bold mb-1">
-                        {connection.firstName} {connection.lastName}
-                      </h2>
-
-                      {/* Age and Gender */}
-                      {(connection.age || connection.gender) && (
-                        <p className="text-sm opacity-75 mb-2">
-                          {connection.age && `${connection.age} years old`}
-                          {connection.age && connection.gender && " • "}
-                          {connection.gender}
-                        </p>
-                      )}
-
-                      {/* About */}
-                      {connection.about && (
-                        <p className="text-sm opacity-80 mb-3 leading-relaxed">
-                          {connection.about.length > 120
-                            ? connection.about.substring(0, 120) + "..."
-                            : connection.about}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex-shrink-0 flex flex-col gap-2 ml-4">
-                      <button className="btn btn-primary btn-sm">
-                        View Profile
-                      </button>
-                      <button className="btn btn-outline btn-sm">
-                        Message
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           </div>
         )}

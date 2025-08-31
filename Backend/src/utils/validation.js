@@ -12,7 +12,6 @@ const validateSignUpData = (req) => {
   }
 };
 
-
 const validateProfileEditData = (req) => {
   const allowedUpdateFields = [
     "skills",
@@ -25,25 +24,26 @@ const validateProfileEditData = (req) => {
     "photoUrl",
   ];
 
-
-  const isEditAllowed = Object.keys(req.body).every(field => allowedUpdateFields.includes(field));
+  const isEditAllowed = Object.keys(req.body).every((field) =>
+    allowedUpdateFields.includes(field)
+  );
   if (!isEditAllowed) {
     throw new Error("Updates not allowed!");
   }
 
-  const { skills, about, gender, age, firstName, lastName, emailId, photoUrl } = req.body;
+  const { skills, about, gender, age, firstName, lastName, emailId, photoUrl } =
+    req.body;
 
   if (emailId && !validator.isEmail(emailId)) {
-    throw new Error('invalid emailId !')
+    throw new Error("invalid emailId !");
   }
 
   if (photoUrl && !validator.isURL(photoUrl)) {
-    throw new Error('Invalid photoUrl!')
+    throw new Error("Invalid photoUrl!");
   }
 
-
- if (firstName && !validator.isLength(firstName,{min:3, max:20})) {
-    throw new Error('Invalid firstName !')
+  if (firstName && !validator.isLength(firstName, { min: 3, max: 20 })) {
+    throw new Error("Invalid firstName !");
   }
 
   if (lastName && !validator.isLength(lastName, { min: 3, max: 20 })) {
@@ -55,19 +55,37 @@ const validateProfileEditData = (req) => {
   }
 
   // skill array validation
-  const isValidSkillsLength =(arr,min,max) => {
+  const isValidSkillsLength = (arr, min, max) => {
     return Array.isArray(arr) && arr.length >= min && arr.length <= max;
-  }
-
+  };
 
   if (skills && !isValidSkillsLength(skills, 1, 10)) {
-    throw new Error('Skills must contain between 1 to 10 !')
+    throw new Error("Skills must contain between 1 to 10 !");
   }
 
-  return isEditAllowed ;
+  // Gender validation
+  if (gender !== undefined) {
+    const validGenders = ["male", "female", "other"];
+    if (
+      gender !== null &&
+      gender !== "" &&
+      !validGenders.includes(gender.toLowerCase())
+    ) {
+      throw new Error("Gender must be male, female, or other!");
+    }
+  }
 
+  // Age validation
+  if (age !== undefined) {
+    if (age !== null && age !== "" && (isNaN(age) || age < 18 || age > 100)) {
+      throw new Error("Age must be a number between 18 and 100!");
+    }
+  }
+
+  return isEditAllowed;
 };
 
 module.exports = {
-  validateSignUpData, validateProfileEditData
+  validateSignUpData,
+  validateProfileEditData,
 };

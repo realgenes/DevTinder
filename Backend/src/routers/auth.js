@@ -1,7 +1,7 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
-const User = require('../models/user');
-const {validateSignUpData} = require('../utils/validation')
+const express = require("express");
+const bcrypt = require("bcrypt");
+const User = require("../models/user");
+const { validateSignUpData } = require("../utils/validation");
 const authRouter = express.Router();
 
 authRouter.post("/signup", async (req, res) => {
@@ -25,9 +25,14 @@ authRouter.post("/signup", async (req, res) => {
       emailId,
       password: passwordHash,
     });
+    const savedUser = await user.save();
+    const token = await savedUser.getJWT();
+    //add token to cookie
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 1 * 3600000),
+    });
 
-    await user.save();
-    res.send("user added successfully!");
+    res.json({ message: "User Added successfully!", data: savedUser });
   } catch (err) {
     res.status(400).send("Error :" + err.message);
   }
@@ -38,17 +43,17 @@ authRouter.post("/login", async (req, res) => {
     const { emailId, password } = req.body;
 
     if (!emailId || !password) {
-      throw new Error('emailId and password are required!');
+      throw new Error("emailId and password are required!");
     }
 
     const user = await User.findOne({ emailId: emailId });
 
     if (!user) {
-      throw new Error('Invalid credintials!')
+      throw new Error("Invalid credintials!");
     }
 
     if (!user.password) {
-      throw new Error('User password not set in DB');
+      throw new Error("User password not set in DB");
     }
 
     const isPasswordValid = await user.validatePassword(password);
@@ -58,25 +63,23 @@ authRouter.post("/login", async (req, res) => {
       const token = await user.getJWT();
       //add token to cookie
       res.cookie("token", token, {
-        expires: new Date(Date.now() + 1* 3600000),
+        expires: new Date(Date.now() + 1 * 3600000),
       });
 
       res.send(user);
     } else {
-      throw new Error('password is not valid !')
+      throw new Error("password is not valid !");
     }
-    
   } catch (error) {
     res.status(400).send("ERROR: " + error.message);
   }
 });
 
-authRouter.post('/logout', async (req, res) => {
-  res.cookie('token', null, {
-    expires: new Date(Date.now()) 
-  })
-  res.send('Logout Successfully !')
-})
-
+authRouter.post("/logout", async (req, res) => {
+  res.cookie("token", null, {
+    expires: new Date(Date.now()),
+  });
+  res.send("Logout Successfully !");
+});
 
 module.exports = authRouter;
