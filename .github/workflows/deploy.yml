@@ -1,0 +1,43 @@
+# .github/workflows/deploy.yml
+name: Deploy DevTinder (Frontend+Backend)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
+          cd /home/ubuntu/DevTinder
+
+          echo "📥 Pulling latest code..."
+          git pull origin main
+
+          echo "🔧 Backend update..."
+          cd backend
+          npm install --production
+          # if backend is proxied by Nginx -> just restart pm2 process
+          pm2 restart backend || pm2 start server.js --name backend
+
+          echo "🎨 Frontend update..."
+          cd ../frontend
+          npm install --production
+          npm run build
+          pm2 restart frontend || pm2 start npm --name frontend -- run start
+
+          echo "🌐 Restarting Nginx..."
+          sudo systemctl restart nginx
+        EOF
