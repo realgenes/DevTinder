@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const connectDB = require("./config/database");
@@ -9,7 +10,7 @@ const initializeSocket = require("./socket");
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://devfronten.netlify.app/"],
     credentials: true,
   })
 );
@@ -28,6 +29,14 @@ app.use("/", requestRouter);
 app.use("/", userRouter);
 app.use("/chat", chatRouter);
 app.use("/user", userRouter); 
+
+// realgenes/devtinder/DevTinder-ed867288b6e5ddfd25f2561d79262b2c287c1260/Backend/src/app.js
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://your-netlify-app-name.netlify.app"], // Add your Netlify URL here later
+    credentials: true,
+  })
+);
 
 mongoose.set("debug", true);
 

@@ -4,30 +4,39 @@ const Message = require("./models/message");
 const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: ["http://localhost:5173", "https://devfronten.netlify.app/"], // Add production URL when deploying
       credentials: true,
     },
   });
 
   io.on("connection", (socket) => {
+    console.log("User connected:", socket.id);
 
     socket.on("sendMessage", async ({ senderId, receiverId, message }) => {
-      const newMessage = new Message({
-        senderId,
-        receiverId,
-        message,
-      });
+      try {
+        const newMessage = new Message({
+          senderId,
+          receiverId,
+          message,
+        });
 
-      await newMessage.save();
+        await newMessage.save();
 
-      io.to(receiverId).emit("receiveMessage", newMessage);
+        // Emit to receiver's room
+        io.to(receiverId).emit("receiveMessage", newMessage);
+      } catch (error) {
+        console.error("Error sending message:", error);
+        socket.emit("messageError", { error: "Failed to send message" });
+      }
     });
 
     socket.on("joinRoom", (userId) => {
       socket.join(userId);
+      console.log(`User ${userId} joined their room`);
     });
 
     socket.on("disconnect", () => {
+      console.log("User disconnected:", socket.id);
     });
   });
 
