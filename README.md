@@ -163,7 +163,6 @@ Create a `.env` file in the Backend directory:
 # Database
 MONGODB_URI=mongodb://localhost:27017/devtinder
 # or use MongoDB Atlas:
-# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/devtinder
 
 # Authentication
 JWT_SECRET=your_super_secret_jwt_key_here
