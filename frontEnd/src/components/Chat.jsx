@@ -50,7 +50,7 @@ const Chat = () => {
   useEffect(() => {
     if (!currentUser?._id || !receiverId) return;
 
-    socket.current = io("http://localhost:7777");
+    socket.current = io(import.meta.env.VITE_API_URL);
     socket.current.emit("joinRoom", currentUser._id);
 
     socket.current.on("receiveMessage", (message) => {
