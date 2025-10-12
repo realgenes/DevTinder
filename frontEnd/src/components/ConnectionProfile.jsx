@@ -16,7 +16,7 @@ const ConnectionProfile = () => {
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/user/${userId}`, {
+      const res = await axios.get(`${BASE_URL}/user/profile/${userId}`, {
         withCredentials: true,
       });
       setUser(res.data.data);

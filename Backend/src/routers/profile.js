@@ -22,7 +22,6 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
       throw new Error("invalid edit request !");
     }
     const loggedInUser = req.user;
-    console.log(loggedInUser);
 
     // Filter out null, undefined, or empty string values for gender and age
     const updateData = { ...req.body };

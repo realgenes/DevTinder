@@ -10,7 +10,6 @@ const initializeSocket = (server) => {
   });
 
   io.on("connection", (socket) => {
-    console.log("a user connected");
 
     socket.on("sendMessage", async ({ senderId, receiverId, message }) => {
       const newMessage = new Message({
@@ -29,7 +28,6 @@ const initializeSocket = (server) => {
     });
 
     socket.on("disconnect", () => {
-      console.log("user disconnected");
     });
   });
 

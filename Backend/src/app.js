@@ -27,6 +27,7 @@ app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 app.use("/chat", chatRouter);
+app.use("/user", userRouter); 
 
 mongoose.set("debug", true);
 

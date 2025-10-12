@@ -1,12 +1,13 @@
 const express = require("express");
 const User = require("../models/user");
 const { userAuth } = require("../middlewares/auth");
+const ConnectionRequest = require("../models/connectionRequest"); 
 const ConnectionRequestModel = require("../models/connectionRequest");
 const userRouter = express.Router();
 
 const USER_SAFE_DATA = "firstName lastName photoUrl gender age about";
 
-//getting pending connection request for the loggedin user
+// ... (your other routes for /requests/received, /connections, /feed remain unchanged) ...
 userRouter.get("/requests/received", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -40,8 +41,6 @@ userRouter.get("/connections", userAuth, async (req, res) => {
       .populate("fromUserId", USER_SAFE_DATA)
       .populate("toUserId", USER_SAFE_DATA);
 
-    console.log("Connection requests found:", connectionRequests.length);
-
     const data = connectionRequests
       .map((row) => {
         if (row.fromUserId && row.toUserId) {
@@ -70,7 +69,6 @@ userRouter.get("/feed", userAuth, async (req, res) => {
     limit = limit > 50 ? 50 : limit;
 
     const skip = (page - 1) * limit;
-    //finding all connection request accepted or rejected
     const connectionRequests = await ConnectionRequestModel.find({
       $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
     }).select("fromUserId toUserId");
@@ -99,12 +97,18 @@ userRouter.get("/feed", userAuth, async (req, res) => {
 });
 
 // Get a specific user's public profile
-userRouter.get("/user/:userId", userAuth, async (req, res) => {
+userRouter.get("/profile/:userId", userAuth, async (req, res) => {
   try {
     const { userId } = req.params;
     const loggedInUserId = req.user._id;
 
-    // Check if they are connected
+
+    // Validate userId format (MongoDB ObjectId is 24 hex characters)
+    if (!userId || !userId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    // Check if the users are connected
     const connection = await ConnectionRequest.findOne({
       $or: [
         { fromUserId: loggedInUserId, toUserId: userId, status: "accepted" },
@@ -112,22 +116,27 @@ userRouter.get("/user/:userId", userAuth, async (req, res) => {
       ],
     });
 
-    if (!connection) {
-      return res
-        .status(403)
-        .json({ message: "You are not connected with this user" });
-    }
+     if (!connection) {
+       return res
+         .status(403)
+         .json({ message: "You are not connected with this user" });
+     }
 
-    // Fetch the user's profile
-    const user = await User.findById(userId).select(USER_SAFE_DATA);
+     // Fetch the user's profile (exclude sensitive data like password)
+     const user = await User.findById(userId).select(USER_SAFE_DATA);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
 
-    res.json({ data: user });
+     if (!user) {
+       return res.status(404).json({ message: "User not found" });
+     }
+
+     res.json({ data: user });
+
+    res.json(user);
   } catch (err) {
-    res.status(400).send("ERROR: " + err.message);
+     res
+       .status(500)
+       .json({ message: "Error fetching profile: " + err.message });
   }
 });
 

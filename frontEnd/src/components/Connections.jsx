@@ -92,7 +92,7 @@ const Connections = () => {
             .map((connection) => (
               <div
                 key={connection._id}
-                className="card bg-base-300 shadow-xl transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1"
+                className="card bg-base-300 shadow-xl transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1 rounded-4xl p-2"
               >
                 <div className="card-body items-center text-center p-6">
                   <div className="avatar">
