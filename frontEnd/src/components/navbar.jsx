@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 import { removeUser } from "../utils/userSlice";
+import axios from "axios";
 
 const Navbar = () => {
   const user = useSelector((store) => store.user);
@@ -10,19 +11,24 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // State for theme management, reading from localStorage
-  const [theme, setTheme] = useState(
-    localStorage.getItem("theme") || "devtinder"
-  );
+  // Array of available themes
+  const themes = ["light", "dark", "cupcake", "cyberpunk", "dracula"];
+  const [themeIndex, setThemeIndex] = useState(() => {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    return Math.max(0, themes.indexOf(savedTheme));
+  });
+
 
   // Effect to apply theme to the document and save preference
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+    const currentTheme = themes[themeIndex];
+    document.documentElement.setAttribute("data-theme", currentTheme);
+    localStorage.setItem("theme", currentTheme);
+  }, [themeIndex]);
 
+  // Function to cycle to the next theme
   const handleThemeToggle = () => {
-    setTheme(theme === "devtinder" ? "devtinderlight" : "devtinder");
+    setThemeIndex((prevIndex) => (prevIndex + 1) % themes.length);
   };
 
   const pendingRequestCount = Array.isArray(requests) ? requests.length : 0;
@@ -45,7 +51,6 @@ const Navbar = () => {
 
   return (
     <div className="navbar bg-base-100 shadow-md px-4 sticky top-0 z-50">
-      {/* Logo */}
       <div className="navbar-start">
         <Link
           to={"/"}
@@ -55,7 +60,6 @@ const Navbar = () => {
         </Link>
       </div>
 
-      {/* Main Navigation Links */}
       {user && (
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1 gap-2 text-base">
@@ -76,34 +80,29 @@ const Navbar = () => {
         </div>
       )}
 
-      {/* Right side actions */}
       <div className="navbar-end">
         {/* Theme Toggle Button */}
-        <label className="swap swap-rotate mr-4">
-          <input
-            type="checkbox"
-            onChange={handleThemeToggle}
-            checked={theme === "devtinderlight"}
-          />
-          {/* Sun icon */}
+        <button
+          className="btn btn-ghost btn-circle"
+          onClick={handleThemeToggle}
+        >
+          {/* Your theme icons here, for simplicity we'll use a text icon */}
           <svg
-            className="swap-on h-6 w-6 fill-current"
             xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
             viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <path d="M5.64,17l-1.41-1.41L12,7.05,19.77,14.83l-1.41,1.41L12,9.88ZM12,3a1,1,0,0,0-1,1V5a1,1,0,0,0,2,0V4A1,1,0,0,0,12,3ZM5.64,7.05,4.23,5.64A1,1,0,0,0,2.81,7.05L4.23,8.46a1,1,0,0,0,1.41-1.41ZM20,12h2a1,1,0,0,0,0-2H20a1,1,0,0,0,0,2ZM18.36,8.46l1.41-1.41A1,1,0,0,0,18.36,5.64L16.95,7.05a1,1,0,0,0,1.41,1.41ZM12,19a1,1,0,0,0,1-1V17a1,1,0,0,0-2,0v1A1,1,0,0,0,12,19ZM2,12H4a1,1,0,0,0,0-2H2a1,1,0,0,0,0,2Z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+            />
           </svg>
-          {/* Moon icon */}
-          <svg
-            className="swap-off h-6 w-6 fill-current"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22a10.14,10.14,0,0,0,9.57,9.57A8.14,8.14,0,0,1,12.14,19.69Z" />
-          </svg>
-        </label>
+        </button>
 
-        {/* User Menu */}
         {user ? (
           <div className="dropdown dropdown-end flex items-center">
             <p className="mr-4 hidden sm:block">Welcome, {user?.firstName}</p>

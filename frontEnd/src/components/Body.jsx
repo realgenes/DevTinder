@@ -3,7 +3,7 @@ import Navbar from "./navbar";
 import Footer from "./Footer";
 import { useEffect } from "react";
 import axios from "axios";
-import { useNavigate, Outlet, useLocation } from "react-router-dom"; // 1. Import useLocation
+import { useNavigate, Outlet, useLocation } from "react-router-dom"; // Import useLocation
 import { BASE_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
@@ -12,14 +12,13 @@ import { motion, AnimatePresence } from "framer-motion";
 const Body = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation(); // 2. Get the location object
+  const location = useLocation(); // Get the location object
 
   const fetchUser = async () => {
     try {
       const res = await axios.get(BASE_URL + "/profile/view", {
         withCredentials: true,
       });
-
       dispatch(addUser(res?.data));
     } catch (error) {
       if (error?.response?.status === 401) {
@@ -30,7 +29,6 @@ const Body = () => {
   };
 
   useEffect(() => {
-    // This will run when the component mounts to check if the user is logged in
     fetchUser();
   }, []);
 
@@ -40,7 +38,7 @@ const Body = () => {
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <motion.div
-            key={location.pathname} // 3. Now 'location' is defined and this will work
+            key={location.pathname} // This now works correctly
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
