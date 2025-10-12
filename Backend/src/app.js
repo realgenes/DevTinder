@@ -10,7 +10,7 @@ const initializeSocket = require("./socket");
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://devfronten.netlify.app/"],
+    origin: ["http://localhost:5173", "https://devfronten.netlify.app"],
     credentials: true,
   })
 );
@@ -28,15 +28,7 @@ app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 app.use("/chat", chatRouter);
-app.use("/user", userRouter); 
-
-// realgenes/devtinder/DevTinder-ed867288b6e5ddfd25f2561d79262b2c287c1260/Backend/src/app.js
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "https://your-netlify-app-name.netlify.app"], // Add your Netlify URL here later
-    credentials: true,
-  })
-);
+app.use("/user", userRouter);
 
 mongoose.set("debug", true);
 
@@ -46,8 +38,9 @@ const io = initializeSocket(server);
 connectDB()
   .then(() => {
     console.log("Database connection established...");
-    server.listen(7777, () => {
-      console.log("Server is listening on port 7777");
+    const PORT = process.env.PORT || 7777;
+    server.listen(PORT, () => {
+      console.log(`Server is listening on port ${PORT}`);
     });
   })
   .catch((err) => {
