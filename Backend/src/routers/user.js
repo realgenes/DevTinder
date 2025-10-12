@@ -98,4 +98,37 @@ userRouter.get("/feed", userAuth, async (req, res) => {
   }
 });
 
+// Get a specific user's public profile
+userRouter.get("/user/:userId", userAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const loggedInUserId = req.user._id;
+
+    // Check if they are connected
+    const connection = await ConnectionRequest.findOne({
+      $or: [
+        { fromUserId: loggedInUserId, toUserId: userId, status: "accepted" },
+        { fromUserId: userId, toUserId: loggedInUserId, status: "accepted" },
+      ],
+    });
+
+    if (!connection) {
+      return res
+        .status(403)
+        .json({ message: "You are not connected with this user" });
+    }
+
+    // Fetch the user's profile
+    const user = await User.findById(userId).select(USER_SAFE_DATA);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ data: user });
+  } catch (err) {
+    res.status(400).send("ERROR: " + err.message);
+  }
+});
+
 module.exports = userRouter;

@@ -8,6 +8,8 @@ import appStore from "./utils/appStore";
 import Feed from "./components/Feed";
 import Connections from "./components/Connections";
 import Request from "./components/Request";
+import Chat from "./components/Chat";
+import ConnectionProfile from "./components/ConnectionProfile";
 
 const App = () => {
   return (
@@ -21,6 +23,8 @@ const App = () => {
               <Route path="/profile" element={<Profile />} />
               <Route path="/connections" element={<Connections />} />
               <Route path="/requests/received" element={<Request />} />
+              <Route path="/chat/:userId" element={<Chat />} />
+              <Route path="/user/:userId" element={<ConnectionProfile />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnection } from "../utils/connectionSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Connections = () => {
   const dispatch = useDispatch();
@@ -13,175 +13,146 @@ const Connections = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Add CSS for hiding scrollbars
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.textContent = `
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
-
   const fetchConnections = async () => {
     try {
-      setError(""); // Clear any previous errors
+      setError("");
       const res = await axios.get(BASE_URL + "/connections", {
         withCredentials: true,
       });
-
-      // Validate the response data
       const connectionsData = res.data.data;
       if (Array.isArray(connectionsData)) {
-        // Filter out any null/undefined connections
-        const validConnections = connectionsData.filter(
-          (connection) => connection && connection._id
-        );
-        dispatch(addConnection(validConnections));
+        dispatch(addConnection(connectionsData));
       } else {
-        console.warn("Invalid connections data received:", connectionsData);
         dispatch(addConnection([]));
       }
     } catch (error) {
-      console.error("Error fetching connections:", error);
-
       if (error.response?.status === 401) {
-        // User is not authenticated, redirect to login
-        setError("Please log in to view connections");
         navigate("/login");
-      } else if (error.response?.status === 400) {
-        setError("Bad request. Please check your authentication.");
       } else {
-        setError(
-          error.response?.data?.message ||
-            error.message ||
-            "Failed to fetch connections"
-        );
+        setError("Failed to fetch connections.");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // Function to refresh connections (can be called from other components)
-  const refreshConnections = () => {
-    setLoading(true);
-    fetchConnections();
-  };
-
   useEffect(() => {
-    // Only fetch connections if user is logged in
     if (user) {
       fetchConnections();
     } else {
       setLoading(false);
-      setError("Please log in to view connections");
     }
   }, [user]);
 
-  if (loading)
-    return <div className="loading loading-spinner loading-lg"></div>;
-  if (error) return <div className="alert alert-error">{error}</div>;
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      {/* Fixed Header */}
-      <div className="flex-shrink-0 p-6 pb-4">
-        <div className="flex justify-center items-center gap-4">
-          <h1 className="text-4xl font-bold">My Connections</h1>
+  const ConnectionSkeleton = () => (
+    <div className="card bg-base-300 shadow-xl animate-pulse">
+      <div className="card-body items-center text-center p-6">
+        <div className="avatar">
+          <div className="w-24 rounded-full bg-base-100"></div>
+        </div>
+        <div className="h-6 w-32 bg-base-100 rounded mt-4"></div>
+        <div className="h-4 w-24 bg-base-100 rounded mt-2"></div>
+        <div className="h-10 w-48 bg-base-100 rounded mt-2"></div>
+        <div className="card-actions justify-center mt-4">
+          <div className="h-10 w-24 bg-base-100 rounded"></div>
+          <div className="h-10 w-24 bg-base-100 rounded"></div>
         </div>
       </div>
+    </div>
+  );
 
-      {/* Scrollable Content - Limited to 4 items height */}
-      <div className="flex-1 px-6 pb-6">
-        {!connections || connections.length === 0 ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="text-center">
-              <h2 className="text-2xl mb-4">No connections found</h2>
-              <p className="text-gray-500">
-                You haven't connected with anyone yet.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="max-w-2xl mx-auto">
-            <div
-              className="space-y-4 overflow-y-auto overflow-x-hidden scrollbar-hide"
-              style={{
-                maxHeight: "calc(4 * (140px + 16px))", // 4 cards * (estimated card height + gap)
-                scrollbarWidth: "none" /* Firefox */,
-                msOverflowStyle: "none" /* IE and Edge */,
-              }}
-            >
-              {connections
-                .filter((connection) => connection && connection._id) // Filter out null/undefined connections
-                .map((connection, index) => {
-                  return (
-                    <div
-                      key={
-                        connection._id || connection.id || `connection-${index}`
-                      }
-                      className="flex bg-base-300 shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
-                    >
-                      {/* Photo */}
-                      <div className="flex-shrink-0 mr-4">
-                        <img
-                          src={
-                            connection.photoUrl ||
-                            "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"
-                          }
-                          alt={`${connection.firstName || "User"} ${
-                            connection.lastName || ""
-                          }`}
-                          className="w-20 h-20 object-cover rounded-full"
-                        />
-                      </div>
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-mono font-bold text-center mb-8">
+        My Connections
+      </h1>
+      {error && <div className="alert alert-error">{error}</div>}
 
-                      {/* Content */}
-                      <div className="flex-grow">
-                        {/* Name */}
-                        <h2 className="text-lg font-bold mb-1">
-                          {connection.firstName || "Unknown"}{" "}
-                          {connection.lastName || "User"}
-                        </h2>
-
-                        {/* Age and Gender */}
-                        {(connection.age || connection.gender) && (
-                          <p className="text-sm opacity-75 mb-2">
-                            {connection.age && `${connection.age} years old`}
-                            {connection.age && connection.gender && " • "}
-                            {connection.gender}
-                          </p>
-                        )}
-
-                        {/* About */}
-                        {connection.about && (
-                          <p className="text-sm opacity-80 mb-3 leading-relaxed">
-                            {connection.about.length > 120
-                              ? connection.about.substring(0, 120) + "..."
-                              : connection.about}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex-shrink-0 flex flex-col gap-2 ml-4">
-                        <button className="btn btn-primary btn-sm">
-                          View Profile
-                        </button>
-                        <button className="btn btn-outline btn-sm">
-                          Message
-                        </button>
-                      </div>
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <ConnectionSkeleton key={i} />
+          ))}
+        </div>
+      ) : !connections || connections.length === 0 ? (
+        <div className="text-center py-20">
+          <div className="mb-4 text-6xl">😕</div>
+          <h2 className="text-2xl font-bold mb-2">No connections yet</h2>
+          <p className="text-base-content/70 mb-6">
+            It looks a bit empty here. Let's find some developers!
+          </p>
+          <Link to="/" className="btn btn-primary">
+            Find Connections
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {connections
+            .filter((connection) => connection && connection._id)
+            .map((connection) => (
+              <div
+                key={connection._id}
+                className="card bg-base-300 shadow-xl transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1"
+              >
+                <div className="card-body items-center text-center p-6">
+                  <div className="avatar">
+                    <div className="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                      <img
+                        src={
+                          connection.photoUrl ||
+                          "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png"
+                        }
+                        alt={`${connection.firstName} ${connection.lastName}`}
+                      />
                     </div>
-                  );
-                })}
-            </div>
-          </div>
-        )}
-      </div>
+                  </div>
+                  <h2 className="card-title text-xl mt-4">
+                    {connection.firstName} {connection.lastName}
+                  </h2>
+                  {(connection.age || connection.gender) && (
+                    <p className="text-sm opacity-75">
+                      {connection.age && `${connection.age} years old`}
+                      {connection.age && connection.gender && " • "}
+                      {connection.gender}
+                    </p>
+                  )}
+                  {connection.about && (
+                    <p className="text-base-content/70 my-2 text-sm">
+                      "
+                      {connection.about.length > 80
+                        ? connection.about.substring(0, 80) + "..."
+                        : connection.about}
+                      "
+                    </p>
+                  )}
+                  <div className="card-actions justify-center mt-4">
+                    <button
+                      className="btn btn-outline btn-sm"
+                      onClick={() => navigate(`/user/${connection._id}`)}
+                    >
+                      View Profile
+                    </button>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => navigate(`/chat/${connection._id}`)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                      Message
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
     </div>
   );
 };

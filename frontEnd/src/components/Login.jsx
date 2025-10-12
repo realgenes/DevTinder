@@ -6,12 +6,13 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 
 const Login = () => {
+  // Default form is now 'Login'
+  const [isLoginForm, setLoginForm] = useState(true);
   const [emailId, setEmailId] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [error, setError] = useState("");
-  const [isLoginForm, setLoginForm] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -19,19 +20,13 @@ const Login = () => {
     try {
       const res = await axios.post(
         BASE_URL + "/login",
-        {
-          emailId,
-          password,
-        },
-        {
-          withCredentials: true,
-        }
+        { emailId, password },
+        { withCredentials: true }
       );
-
       dispatch(addUser(res.data));
-      return navigate("/");
+      navigate("/");
     } catch (error) {
-      setError(error?.response?.data || "Something went wrong!");
+      setError(error?.response?.data || "Login failed. Please try again.");
     }
   };
 
@@ -40,112 +35,123 @@ const Login = () => {
       const res = await axios.post(
         BASE_URL + "/signup",
         { firstName, lastName, emailId, password },
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
-
-     
-      // Extract user data from the nested response
       const userData = res.data.data;
-
       if (userData) {
         dispatch(addUser(userData));
-        return navigate("/profile");
+        navigate("/profile"); // Redirect to profile to complete setup
       } else {
         setError("Invalid response from server");
       }
     } catch (error) {
-      setError(error?.response?.data || "Something went wrong");
+      setError(error?.response?.data || "Signup failed. Please try again.");
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError(""); // Clear previous errors
+    if (isLoginForm) {
+      handleLogin();
+    } else {
+      handleSignUp();
     }
   };
 
   return (
-    <div className="flex justify-center my-12">
-      <div className="card w-96 bg-base-300 card-xl shadow-sm transition-all duration-700 ease-in-out">
+    <div className="flex justify-center my-12 px-4">
+      <div className="card w-full max-w-md bg-base-300 shadow-xl">
         <div className="card-body">
-          <h2 className="card-title text-2xl transition-all duration-300">
-            {isLoginForm ? "Login" : "Signup"}
+          <h2 className="card-title text-2xl font-mono justify-center mb-4">
+            {isLoginForm ? "Login" : "Create Account"}
           </h2>
-          <div className="space-y-2">
-            {/* Name fields with smooth transition */}
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {/* Name fields - only for signup */}
             <div
               className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                !isLoginForm ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                !isLoginForm
+                  ? "max-h-96 opacity-100 space-y-3"
+                  : "max-h-0 opacity-0"
               }`}
             >
-              <fieldset className="fieldset py-1 mb-1">
-                <legend className="fieldset-legend textarea-lg">
-                  First Name-
-                </legend>
+              <div>
+                <label className="label">
+                  <span className="label-text">First Name</span>
+                </label>
                 <input
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="input py-6 w-full"
-                  placeholder="Enter your firstName here"
+                  className="input input-bordered w-full"
+                  placeholder="Enter your first name"
                 />
-              </fieldset>
+              </div>
 
-              <fieldset className="fieldset py-1 mb-1">
-                <legend className="fieldset-legend textarea-lg">
-                  Last Name -
-                </legend>
+              <div>
+                <label className="label">
+                  <span className="label-text">Last Name</span>
+                </label>
                 <input
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="input py-6 w-full"
-                  placeholder="Enter your last name here"
+                  className="input input-bordered w-full"
+                  placeholder="Enter your last name"
                 />
-              </fieldset>
+              </div>
             </div>
 
-            <fieldset className="fieldset py-1 mb-1">
-              <legend className="fieldset-legend textarea-lg">
-                Email ID -
-              </legend>
+            {/* Email and Password fields */}
+            <div>
+              <label className="label mb-1">
+                <span className="label-text">Email ID</span>
+              </label>
               <input
-                type="text"
+                type="email"
                 value={emailId}
                 onChange={(e) => setEmailId(e.target.value)}
-                className="input py-6 w-full"
-                placeholder="Enter your email here"
+                className="input input-bordered w-full"
+                placeholder="you@example.com"
+                required
               />
-            </fieldset>
+            </div>
 
-            <fieldset className="fieldset py-1 mb-1">
-              <legend className="fieldset-legend textarea-lg">
-                Password -
-              </legend>
+            <div>
+              <label className="label mb-1">
+                <span className="label-text">Password</span>
+              </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input py-6 w-full"
+                className="input input-bordered w-full"
                 placeholder="Enter your password"
+                required
               />
-            </fieldset>
-          </div>
+            </div>
 
-          <div className="flex flex-col justify-center items-center card-actions">
-            <p className="text-red-500 text-sm transition-all duration-300">
-              {error}
-            </p>
+            <div className="card-actions flex-col items-center pt-4">
+              {error && <p className="text-error text-sm mb-2">{error}</p>}
+              <button type="submit" className="btn btn-primary w-full max-w-xs">
+                {isLoginForm ? "Login" : "Sign Up"}
+              </button>
+            </div>
+          </form>
+
+          <div className="text-center mt-4">
             <button
-              className="btn btn-primary text-lg transition-all duration-200 hover:scale-105"
-              onClick={isLoginForm ? handleLogin : handleSignUp}
-            >
-              {isLoginForm ? "Login" : "Sign up"}
-            </button>
-            <p
-              onClick={() => setLoginForm((value) => !value)}
-              className="cursor-pointer mt-2 -mb-3 transition-all duration-200 hover:text-primary hover:scale-105"
+              onClick={() => {
+                setLoginForm((value) => !value);
+                setError(""); // Clear errors on toggle
+              }}
+              className="link link-hover text-sm"
             >
               {isLoginForm
-                ? "New User? Sign up here "
-                : "Existing User? Login Here"}
-            </p>
+                ? "New User? Create an account"
+                : "Already have an account? Login here"}
+            </button>
           </div>
         </div>
       </div>

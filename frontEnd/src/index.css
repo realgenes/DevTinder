@@ -1,2 +1,14 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+/* frontEnd/src/index.css */
+.btn {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+.btn:hover {
+  @apply brightness-110 scale-105;
+}
+.menu li>a.active {
+  @apply bg-primary text-primary-content;
+}
