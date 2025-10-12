@@ -1,7 +1,22 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* frontEnd/src/index.css */
+/* Apply the new default fonts */
+body {
+  font-family: theme("fontFamily.sans");
+}
+
+/* Use the mono font for headings to give a code-like feel */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: theme("fontFamily.mono");
+}
+
+/* Existing styles */
 .btn {
   @apply transition-all duration-200 ease-in-out;
 }
@@ -9,6 +24,7 @@
 .btn:hover {
   @apply brightness-110 scale-105;
 }
+
 .menu li>a.active {
   @apply bg-primary text-primary-content;
 }

@@ -1,9 +1,9 @@
 import axios from "axios";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addRequests } from "../utils/requestSlice";
-import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Request = () => {
   const dispatch = useDispatch();
@@ -11,20 +11,9 @@ const Request = () => {
   const [error, setError] = useState("");
   const requests = useSelector((store) => store.requests);
 
-  // Add CSS for hiding scrollbars
-  useEffect(() => {
-    const style = document.createElement("style");
-    style.textContent = `
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
-
   const fetchRequest = async () => {
-    if (requests && requests.length > 0) {
+    // No need to refetch if we already have requests in the store
+    if (requests !== null) {
       setLoading(false);
       return;
     }
@@ -32,10 +21,9 @@ const Request = () => {
       const res = await axios.get(BASE_URL + "/requests/received", {
         withCredentials: true,
       });
-      dispatch(addRequests(res.data.data));
+      dispatch(addRequests(res.data.data || []));
     } catch (error) {
-      console.error("Error fetching requests requests", error);
-      setError(error.response?.data?.message || error.message);
+      setError(error.response?.data?.message || "Failed to fetch requests.");
     } finally {
       setLoading(false);
     }
@@ -47,121 +35,141 @@ const Request = () => {
 
   const handleRequestReview = async (status, requestId) => {
     try {
-      const res = await axios.post(
-        BASE_URL + "/request/review/" + status + "/" + requestId,
+      await axios.post(
+        `${BASE_URL}/request/review/${status}/${requestId}`,
         {},
         { withCredentials: true }
       );
-
-
-      // Remove the accepted or rejected request from the list
+      // Optimistically update the UI by removing the handled request
       const updatedRequests = requests.filter((req) => req._id !== requestId);
       dispatch(addRequests(updatedRequests));
-      
     } catch (error) {
-      console.error("Error accepting request:", error);
-      setError(error.response?.data?.message || "Failed to accept request");
+      setError(error.response?.data?.message || "Action failed.");
     }
   };
 
-  if (loading)
-    return <div className="loading loading-spinner loading-lg"></div>;
-  if (error) return <div className="alert alert-error">{error}</div>;
+  const RequestSkeleton = () => (
+    <div className="flex items-center bg-base-300 shadow-lg rounded-lg p-4 animate-pulse">
+      <div className="avatar mr-4">
+        <div className="w-20 h-20 rounded-full bg-base-100"></div>
+      </div>
+      <div className="flex-grow space-y-2">
+        <div className="h-5 w-1/3 bg-base-100 rounded"></div>
+        <div className="h-4 w-1/4 bg-base-100 rounded"></div>
+        <div className="h-4 w-2/3 bg-base-100 rounded"></div>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-2 ml-4">
+        <div className="h-10 w-24 bg-base-100 rounded"></div>
+        <div className="h-10 w-24 bg-base-100 rounded"></div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Fixed Header */}
-      <div className="flex-shrink-0 p-6 pb-4">
-        <div className="flex justify-center">
-          <h1 className="text-4xl font-bold">My Requests</h1>
-        </div>
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-mono font-bold text-center mb-8">
+        Connection Requests
+      </h1>
+      {error && <div className="alert alert-error">{error}</div>}
 
-      {/* Scrollable Content - Limited to 4 items height */}
-      <div className="flex-1 px-6 pb-6">
-        {!requests || requests.length === 0 ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="text-center">
-              <h2 className="text-2xl mb-4">No new requests found</h2>
-            </div>
+      <div className="max-w-3xl mx-auto">
+        {loading ? (
+          <div className="space-y-4">
+            {[...Array(2)].map((_, i) => (
+              <RequestSkeleton key={i} />
+            ))}
+          </div>
+        ) : !requests || requests.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="mb-4 text-6xl">👍</div>
+            <h2 className="text-2xl font-bold mb-2">All caught up!</h2>
+            <p className="text-base-content/70">
+              You have no new connection requests right now.
+            </p>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto">
-            <div
-              className="space-y-4 overflow-y-auto overflow-x-hidden scrollbar-hide"
-              style={{
-                maxHeight: "calc(4 * (140px + 16px))", // 4 cards * (estimated card height + gap)
-                scrollbarWidth: "none" /* Firefox */,
-                msOverflowStyle: "none" /* IE and Edge */,
-              }}
-            >
-              {requests.map((request) => {
-                const { firstName, lastName, photoUrl, about, age, gender } =
-                  request.fromUserId;
+          <div className="space-y-4">
+            {requests.map((request) => {
+              if (!request.fromUserId) return null; // Safety check
+              const { firstName, lastName, photoUrl, about, age, gender } =
+                request.fromUserId;
 
-                return (
-                  <div
-                    key={request._id}
-                    className="flex bg-base-300 shadow-md rounded-lg p-4 hover:shadow-lg transition-shadow"
-                  >
-                    {/* Photo */}
-                    <div className="flex-shrink-0 mr-4">
-                      <img
-                        src={photoUrl}
-                        alt={`${firstName} ${lastName}`}
-                        className="w-20 h-20 object-cover rounded-full"
-                      />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-grow">
-                      {/* Name */}
-                      <h2 className="text-lg font-bold mb-1">
-                        {firstName} {lastName}
-                      </h2>
-
-                      {/* Age and Gender */}
-                      {(age || gender) && (
-                        <p className="text-sm opacity-75 mb-2">
-                          {age && `${age} years old`}
-                          {age && gender && " • "}
-                          {gender}
-                        </p>
-                      )}
-
-                      {/* About */}
-                      {about && (
-                        <p className="text-sm opacity-80 mb-3 leading-relaxed">
-                          {about.length > 120
-                            ? about.substring(0, 120) + "..."
-                            : about}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex-shrink-0 flex flex-col gap-2 ml-4">
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() =>
-                          handleRequestReview("accepted", request._id)
-                        }
-                      >
-                        Accept
-                      </button>
-                      <button
-                        className="btn btn-error btn-sm"
-                        onClick={() =>
-                          handleRequestReview("rejected", request._id)
-                        }
-                      >
-                        Reject
-                      </button>
+              return (
+                <div
+                  key={request._id}
+                  className="flex items-center bg-base-300 shadow-lg rounded-lg p-4 transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1"
+                >
+                  <div className="avatar mr-4">
+                    <div className="w-20 h-20 rounded-full ring ring-secondary ring-offset-base-100 ring-offset-2">
+                      <img src={photoUrl} alt={`${firstName} ${lastName}`} />
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                  <div className="flex-grow">
+                    <h2 className="text-lg font-bold">
+                      {firstName} {lastName}
+                    </h2>
+                    {(age || gender) && (
+                      <p className="text-sm opacity-75">
+                        {age && `${age} years old`}
+                        {age && gender && " • "}
+                        {gender}
+                      </p>
+                    )}
+                    {about && (
+                      <p className="text-sm opacity-80 mt-1">
+                        "
+                        {about.length > 90
+                          ? about.substring(0, 90) + "..."
+                          : about}
+                        "
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 ml-4">
+                    <button
+                      className="btn btn-success btn-sm"
+                      onClick={() =>
+                        handleRequestReview("accepted", request._id)
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Accept
+                    </button>
+                    <button
+                      className="btn btn-error btn-sm"
+                      onClick={() =>
+                        handleRequestReview("rejected", request._id)
+                      }
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

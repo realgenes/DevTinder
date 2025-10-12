@@ -3,18 +3,17 @@ import Navbar from "./navbar";
 import Footer from "./Footer";
 import { useEffect } from "react";
 import axios from "axios";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, Outlet, useLocation } from "react-router-dom"; // 1. Import useLocation
 import { BASE_URL } from "../utils/constants";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Body = () => {
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const userData = useSelector((store) => store.user);
-  
+  const location = useLocation(); // 2. Get the location object
+
   const fetchUser = async () => {
     try {
       const res = await axios.get(BASE_URL + "/profile/view", {
@@ -22,27 +21,26 @@ const Body = () => {
       });
 
       dispatch(addUser(res?.data));
-      
     } catch (error) {
-      if (error.status === 401) {
+      if (error?.response?.status === 401) {
         navigate("/login");
       }
-      
       console.error(error);
     }
   };
 
   useEffect(() => {
+    // This will run when the component mounts to check if the user is logged in
     fetchUser();
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-base-100 text-neutral-content">
+    <div className="min-h-screen flex flex-col bg-base-100 text-base-content">
       <Navbar />
       <main className="flex-grow">
         <AnimatePresence mode="wait">
           <motion.div
-            key={location.pathname}
+            key={location.pathname} // 3. Now 'location' is defined and this will work
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
