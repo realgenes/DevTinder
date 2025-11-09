@@ -1,10 +1,9 @@
-# DevTinder 💻❤️
+# DevTinder ️
 
 > A modern, full-stack dating application for developers. Connect with fellow coders, build meaningful connections, and find your perfect coding partner!
 
 [![Live Demo](https://img.shields.io/badge/demo-live-success)](https://devfronten.netlify.app)
 [![Backend](https://img.shields.io/badge/backend-render-blue)](https://devtinder-backend-i79q.onrender.com)
-[![License](https://img.shields.io/badge/license-ISC-green)](LICENSE)
 
 ---
 
@@ -124,9 +123,7 @@ DevTinder/
 │   ├── tailwind.config.js
 │   ├── eslint.config.js
 │   └── .env                          # Environment variables
-│
-├── DEPLOYMENT_GUIDE.md               # Deployment instructions
-├── DEPLOYMENT_FIXES.md               # Deployment troubleshooting
+│          
 └── README.md
 ```
 
@@ -343,11 +340,6 @@ npm run lint    # Run ESLint
 - **Frontend**: [https://devfronten.netlify.app](https://devfronten.netlify.app)
 - **Backend**: [https://devtinder-backend-i79q.onrender.com](https://devtinder-backend-i79q.onrender.com)
 
-### Deployment Guides
-
-Comprehensive deployment guides are available:
-- `DEPLOYMENT_GUIDE.md` - Step-by-step deployment instructions
-- `DEPLOYMENT_FIXES.md` - Common issues and solutions
 
 ### Quick Deployment Checklist
 
@@ -411,9 +403,7 @@ We welcome contributions! Here's how you can help:
 
 ---
 
-## 📝 License
 
-This project is licensed under the ISC License.
 
 ---
 
@@ -438,22 +428,11 @@ This project is licensed under the ISC License.
 
 ---
 
-## 📧 Support
 
-If you encounter any issues or have questions:
-
-1. Check the [Deployment Guide](DEPLOYMENT_GUIDE.md)
-2. Review [Common Fixes](DEPLOYMENT_FIXES.md)
-3. Open an [Issue](https://github.com/realgenes/DevTinder/issues)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by developers, for developers**
-
-⭐ Star this repo if you find it helpful!
-
-[Report Bug](https://github.com/realgenes/DevTinder/issues) · [Request Feature](https://github.com/realgenes/DevTinder/issues)
 
 </div>
