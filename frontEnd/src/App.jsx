@@ -17,9 +17,12 @@ const App = () => {
       <Provider store={appStore}>
         <BrowserRouter basename="/">
           <Routes>
+            {/* Public route - Login is outside Body */}
+            <Route path="/login" element={<Login />} />
+
+            {/* Protected routes - All inside Body */}
             <Route path="/" element={<Body />}>
               <Route path="/" element={<Feed />} />
-              <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/connections" element={<Connections />} />
               <Route path="/requests/received" element={<Request />} />
