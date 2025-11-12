@@ -4,6 +4,24 @@ const User = require("../models/user");
 const { validateSignUpData } = require("../utils/validation");
 const authRouter = express.Router();
 
+const isCrossSiteDeployment = () => {
+  if (process.env.FRONTEND_URL) {
+    return !process.env.FRONTEND_URL.includes("localhost");
+  }
+  return process.env.NODE_ENV === "production";
+};
+
+const buildCookieOptions = (overrides = {}) => {
+  const isProduction = isCrossSiteDeployment();
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    ...overrides,
+  };
+};
+
 authRouter.post("/signup", async (req, res) => {
   try {
     //validate data
@@ -28,12 +46,7 @@ authRouter.post("/signup", async (req, res) => {
     const savedUser = await user.save();
     const token = await savedUser.getJWT();
     //add token to cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    res.cookie("token", token, buildCookieOptions());
 
     res.json({ message: "User Added successfully!", data: savedUser });
   } catch (err) {
@@ -65,12 +78,7 @@ authRouter.post("/login", async (req, res) => {
       //create a jwt token
       const token = await user.getJWT();
       //add token to cookie
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
+      res.cookie("token", token, buildCookieOptions());
 
       res.send(user);
     } else {
@@ -82,12 +90,7 @@ authRouter.post("/login", async (req, res) => {
 });
 
 authRouter.post("/logout", async (req, res) => {
-  res.cookie("token", null, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 0,
-  });
+  res.cookie("token", null, buildCookieOptions({ maxAge: 0 }));
   res.send("Logout Successfully !");
 });
 

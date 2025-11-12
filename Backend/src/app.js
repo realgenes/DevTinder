@@ -8,9 +8,20 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const initializeSocket = require("./socket");
 
+const allowedOrigins = ["http://localhost:5173"];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://devfronten.netlify.app"],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
