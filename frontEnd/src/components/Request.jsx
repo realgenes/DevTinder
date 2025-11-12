@@ -13,7 +13,7 @@ const Request = () => {
 
   const fetchRequest = async () => {
     // No need to refetch if we already have requests in the store
-    if (requests !== null) {
+    if (requests.length > 0) {
       setLoading(false);
       return;
     }

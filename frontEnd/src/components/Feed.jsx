@@ -23,11 +23,11 @@ const Feed = () => {
   };
 
   useEffect(() => {
-    // Only fetch feed if it's null (the initial state)
-    if (feed === null) {
+    // Only fetch feed if it's empty (the initial state)
+    if (feed.length === 0) {
       getFeed();
     }
-  }, [feed]);
+  }, []);
 
   const removeCard = (userId) => {
     dispatch(removeUserFeed(userId));
@@ -36,7 +36,7 @@ const Feed = () => {
   return (
     <div className="flex justify-center items-center mt-10 relative h-[500px] w-full">
       <div className="relative w-72 h-[480px]">
-        {feed && feed.length > 0 ? (
+        {feed.length > 0 ? (
           feed
             .map((user, index) => (
               <UserCard
@@ -49,9 +49,7 @@ const Feed = () => {
             .reverse() // Reverse for a nice stacking effect in the UI
         ) : (
           <div className="card-xl bg-base-300 w-72 shadow-md rounded-lg h-[480px] flex items-center justify-center absolute">
-            <p className="text-gray-500">
-              {feed === null ? "Loading users..." : "No more users to show!"}
-            </p>
+            <p className="text-gray-500">No more users to show!</p>
           </div>
         )}
       </div>
