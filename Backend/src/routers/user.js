@@ -130,9 +130,7 @@ userRouter.get("/profile/:userId", userAuth, async (req, res) => {
        return res.status(404).json({ message: "User not found" });
      }
 
-     res.json({ data: user });
-
-    res.json(user);
+     return res.json({ data: user });
   } catch (err) {
      res
        .status(500)
