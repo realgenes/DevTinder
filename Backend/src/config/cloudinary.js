@@ -6,16 +6,27 @@ const requiredKeys = [
   "CLOUDINARY_API_SECRET",
 ];
 
-const hasCloudinaryConfig = requiredKeys.every(
+const hasNamedKeyConfig = requiredKeys.every(
   (key) => !!process.env[key] && String(process.env[key]).trim() !== ""
 );
+const hasUrlConfig =
+  !!process.env.CLOUDINARY_URL &&
+  String(process.env.CLOUDINARY_URL).trim().startsWith("cloudinary://");
+
+const hasCloudinaryConfig = hasNamedKeyConfig || hasUrlConfig;
 
 if (hasCloudinaryConfig) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
+  if (hasNamedKeyConfig) {
+    cloudinary.config({
+      cloud_name: String(process.env.CLOUDINARY_CLOUD_NAME).trim(),
+      api_key: String(process.env.CLOUDINARY_API_KEY).trim(),
+      api_secret: String(process.env.CLOUDINARY_API_SECRET).trim(),
+    });
+  } else {
+    cloudinary.config({
+      cloudinary_url: String(process.env.CLOUDINARY_URL).trim(),
+    });
+  }
 }
 
 module.exports = {
