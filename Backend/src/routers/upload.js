@@ -27,7 +27,7 @@ uploadRouter.post(
       if (!hasCloudinaryConfig) {
         return res.status(500).json({
           message:
-            "Cloudinary is not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
+            "Cloudinary is not configured. Add CLOUDINARY_CLOUD_NAME/CLOUDINARY_API_KEY/CLOUDINARY_API_SECRET or CLOUDINARY_URL.",
         });
       }
 
