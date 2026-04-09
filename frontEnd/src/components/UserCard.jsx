@@ -3,6 +3,9 @@ import React, { useState } from "react";
 import { BASE_URL } from "../utils/constants";
 import { motion } from "framer-motion";
 
+const fallbackPhoto =
+  "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png";
+
 const UserCard = ({ user, removeCard, isTopCard, preview = false }) => {
   if (!user) {
     return null;
@@ -12,7 +15,6 @@ const UserCard = ({ user, removeCard, isTopCard, preview = false }) => {
   const [showFullAbout, setShowFullAbout] = useState(false);
 
   const handleSendRequest = async (status, userId) => {
-    // This function is only needed for the feed, not the preview
     if (preview) return;
     try {
       await axios.post(
@@ -37,67 +39,101 @@ const UserCard = ({ user, removeCard, isTopCard, preview = false }) => {
     }
   };
 
-  const isLongAbout = about && about.length > 120;
+  const isLongAbout = about && about.length > 130;
 
   const cardContent = (
     <>
-      <figure className="h-64 flex-shrink-0">
+      <figure className="relative h-[300px] flex-shrink-0 overflow-hidden rounded-t-[30px]">
         <img
-          src={photoUrl}
+          src={photoUrl || fallbackPhoto}
           alt="Profile"
-          className="w-full h-full object-cover bg-gray-200 rounded-t-lg pointer-events-none"
+          className="h-full w-full object-cover pointer-events-none"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+          <p className="text-xs uppercase tracking-[0.26em] text-white/80">
+            Featured profile
+          </p>
+          <h2 className="mt-2 font-display text-3xl font-semibold">
+            {firstName} {lastName}
+          </h2>
+          {(age || gender) && (
+            <p className="mt-1 text-sm text-white/85">
+              {[age ? `${age}` : null, gender].filter(Boolean).join(" • ")}
+            </p>
+          )}
+        </div>
       </figure>
-      <div className="card-body p-6 flex-grow flex flex-col h-52">
-        <h2 className="card-title text-xl flex-shrink-0">
-          {firstName + " " + lastName}
-        </h2>
-        {age && gender && (
-          <p className="text-lg flex-shrink-0">{age + " " + gender}</p>
-        )}
 
-        <div className="flex-grow overflow-hidden flex flex-col min-h-0">
-          <div
-            className={`text-sm break-words ${
-              showFullAbout ? "overflow-y-auto flex-grow" : "flex-shrink-0"
+      <div className="flex min-h-[260px] flex-grow flex-col p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+            Open to connect
+          </span>
+          {!preview && (
+            <span className="text-xs uppercase tracking-[0.18em] text-base-content/70">
+              Drag
+            </span>
+          )}
+        </div>
+
+        <div className="flex-grow overflow-hidden">
+          <p
+            className={`text-sm leading-7 text-base-content/90 ${
+              !showFullAbout ? "line-clamp-5" : ""
             }`}
           >
-            <p className={!showFullAbout && isLongAbout ? "line-clamp-3" : ""}>
-              {about}
-            </p>
-          </div>
+            {about || "A thoughtful builder with room for a great introduction."}
+          </p>
           {isLongAbout && (
             <button
               onClick={() => setShowFullAbout(!showFullAbout)}
-              className="text-primary text-sm hover:underline mt-1 flex-shrink-0"
+              className="mt-3 text-sm font-semibold text-primary hover:underline"
             >
-              {showFullAbout ? "Show less" : "Show more"}
+              {showFullAbout ? "Show less" : "Read more"}
             </button>
           )}
         </div>
 
         {!preview && (
-          <div className="text-center text-xs text-gray-400 mt-4 flex-shrink-0">
-            Swipe left to ignore, right to show interest
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="soft-surface rounded-[22px] p-4 text-center">
+              <p className="text-xs uppercase tracking-[0.22em] text-base-content/80">
+                Ignore
+              </p>
+              <p className="mt-2 text-sm font-semibold text-base-content/90">
+                Swipe left
+              </p>
+            </div>
+            <div className="rounded-[22px] bg-gradient-to-r from-primary to-secondary p-4 text-center text-white shadow-lg shadow-primary/15">
+              <p className="text-xs uppercase tracking-[0.22em] text-white/70">
+                Interested
+              </p>
+              <p className="mt-2 text-sm font-semibold">Swipe right</p>
+            </div>
           </div>
         )}
       </div>
     </>
   );
 
-  return preview ? (
-    <div className="card-xl bg-base-300 w-72 shadow-md rounded-lg h-[480px] flex flex-col">
-      {cardContent}
-    </div>
-  ) : (
+  if (preview) {
+    return (
+      <div className="premium-card h-[560px] w-full overflow-hidden">
+        {cardContent}
+      </div>
+    );
+  }
+
+  return (
     <motion.div
       drag={isTopCard ? "x" : false}
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       onDragEnd={onDragEnd}
       animate={{ y: 0, scale: 1, opacity: 1 }}
-      initial={{ scale: 0.95, opacity: 0.8 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="card-xl bg-base-300 w-72 shadow-md rounded-lg h-[480px] flex flex-col absolute cursor-grab"
+      initial={{ scale: 0.96, opacity: 0.82 }}
+      transition={{ type: "spring", stiffness: 280, damping: 28 }}
+      className="premium-card absolute left-0 top-0 flex h-[560px] w-full cursor-grab flex-col overflow-hidden"
       style={{ touchAction: isTopCard ? "none" : "auto" }}
     >
       {cardContent}

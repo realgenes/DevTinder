@@ -3,7 +3,9 @@ import React, { useEffect, useState } from "react";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addRequests } from "../utils/requestSlice";
-import { Link } from "react-router-dom";
+
+const fallbackPhoto =
+  "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png";
 
 const Request = () => {
   const dispatch = useDispatch();
@@ -12,7 +14,6 @@ const Request = () => {
   const requests = useSelector((store) => store.requests);
 
   const fetchRequest = async () => {
-    // No need to refetch if we already have requests in the store
     if (requests.length > 0) {
       setLoading(false);
       return;
@@ -40,7 +41,6 @@ const Request = () => {
         {},
         { withCredentials: true }
       );
-      // Optimistically update the UI by removing the handled request
       const updatedRequests = requests.filter((req) => req._id !== requestId);
       dispatch(addRequests(updatedRequests));
     } catch (error) {
@@ -49,130 +49,128 @@ const Request = () => {
   };
 
   const RequestSkeleton = () => (
-    <div className="flex items-center bg-base-300 shadow-lg rounded-lg p-4 animate-pulse">
-      <div className="avatar mr-4">
-        <div className="w-20 h-20 rounded-full bg-base-100"></div>
-      </div>
-      <div className="flex-grow space-y-2">
-        <div className="h-5 w-1/3 bg-base-100 rounded"></div>
-        <div className="h-4 w-1/4 bg-base-100 rounded"></div>
-        <div className="h-4 w-2/3 bg-base-100 rounded"></div>
-      </div>
-      <div className="flex flex-col sm:flex-row gap-2 ml-4">
-        <div className="h-10 w-24 bg-base-100 rounded"></div>
-        <div className="h-10 w-24 bg-base-100 rounded"></div>
+    <div className="premium-card animate-pulse p-4 sm:p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="h-24 w-24 rounded-[28px] bg-white/60" />
+        <div className="flex-grow">
+          <div className="h-6 w-48 rounded-full bg-white/60" />
+          <div className="mt-3 h-4 w-28 rounded-full bg-white/50" />
+          <div className="mt-4 h-14 rounded-[20px] bg-white/50" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:w-56">
+          <div className="h-12 rounded-full bg-white/60" />
+          <div className="h-12 rounded-full bg-white/60" />
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-mono font-bold text-center mb-8">
-        Connection Requests
-      </h1>
-      {error && <div className="alert alert-error">{error}</div>}
+    <div className="space-y-6 pb-4">
+      <section className="premium-card p-6 sm:p-8">
+        <p className="text-sm uppercase tracking-[0.3em] text-base-content/45">
+          Incoming interest
+        </p>
+        <h1 className="mt-3 text-4xl font-semibold text-balance sm:text-5xl">
+          Decide who gets access to your world.
+        </h1>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-base-content/85 sm:text-lg">
+          Review new requests in a calmer, more premium queue. Accept the ones
+          worth exploring and gracefully pass on the rest.
+        </p>
+      </section>
 
-      <div className="max-w-3xl mx-auto">
-        {loading ? (
-          <div className="space-y-4">
-            {[...Array(2)].map((_, i) => (
-              <RequestSkeleton key={i} />
-            ))}
-          </div>
-        ) : !requests || requests.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="mb-4 text-6xl">👍</div>
-            <h2 className="text-2xl font-bold mb-2">All caught up!</h2>
-            <p className="text-base-content/70">
-              You have no new connection requests right now.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {requests.map((request) => {
-              if (!request.fromUserId) return null; // Safety check
-              const { firstName, lastName, photoUrl, about, age, gender } =
-                request.fromUserId;
+      {error && <div className="alert alert-error rounded-[24px]">{error}</div>}
 
-              return (
-                <div
-                  key={request._id}
-                  className="flex items-center bg-base-300 shadow-lg rounded-lg p-4 transition-all duration-300 hover:shadow-primary/20 hover:-translate-y-1"
-                >
-                  <div className="avatar mr-4">
-                    <div className="w-20 h-20 rounded-full ring ring-secondary ring-offset-base-100 ring-offset-2">
-                      <img src={photoUrl} alt={`${firstName} ${lastName}`} />
-                    </div>
+      {loading ? (
+        <div className="space-y-4">
+          {[...Array(2)].map((_, i) => (
+            <RequestSkeleton key={i} />
+          ))}
+        </div>
+      ) : !requests || requests.length === 0 ? (
+        <div className="premium-card mx-auto max-w-2xl px-8 py-16 text-center">
+          <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-secondary/20 to-primary/20 text-4xl">
+            ✓
+          </div>
+          <h2 className="mt-6 text-3xl font-semibold">All caught up</h2>
+          <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-base-content/85">
+            You have no pending requests right now. When someone shows interest,
+            they’ll appear here in this review list.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {requests.map((request) => {
+            if (!request.fromUserId) return null;
+            const { firstName, lastName, photoUrl, about, age, gender } =
+              request.fromUserId;
+
+            return (
+              <article
+                key={request._id}
+                className="premium-card overflow-hidden p-4 sm:p-5"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="h-28 w-28 overflow-hidden rounded-[30px]">
+                    <img
+                      src={photoUrl || fallbackPhoto}
+                      alt={`${firstName} ${lastName}`}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
+
                   <div className="flex-grow">
-                    <h2 className="text-lg font-bold">
-                      {firstName} {lastName}
-                    </h2>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h2 className="text-2xl font-semibold">
+                        {firstName} {lastName}
+                      </h2>
+                      <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                        Wants to connect
+                      </span>
+                    </div>
+
                     {(age || gender) && (
-                      <p className="text-sm opacity-75">
-                        {age && `${age} years old`}
-                        {age && gender && " • "}
-                        {gender}
+                      <p className="mt-2 text-sm text-base-content/80">
+                        {[age ? `${age} years old` : null, gender]
+                          .filter(Boolean)
+                          .join(" • ")}
                       </p>
                     )}
-                    {about && (
-                      <p className="text-sm opacity-80 mt-1">
-                        "
-                        {about.length > 90
-                          ? about.substring(0, 90) + "..."
-                          : about}
-                        "
-                      </p>
-                    )}
+
+                    <p className="mt-4 text-sm leading-7 text-base-content/90">
+                      {about
+                        ? about.length > 150
+                          ? `${about.substring(0, 150)}...`
+                          : about
+                        : "A polished developer profile is waiting for your response."}
+                    </p>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-2 ml-4">
+
+                  <div className="grid grid-cols-2 gap-3 sm:w-56">
                     <button
-                      className="btn btn-success btn-sm"
+                      className="btn h-12 min-h-12 rounded-full border-none bg-gradient-to-r from-success to-emerald-400 text-white"
                       onClick={() =>
                         handleRequestReview("accepted", request._id)
                       }
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
                       Accept
                     </button>
                     <button
-                      className="btn btn-error btn-sm"
+                      className="btn soft-surface h-12 min-h-12 rounded-full text-base-content"
                       onClick={() =>
                         handleRequestReview("rejected", request._id)
                       }
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Reject
+                      Pass
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

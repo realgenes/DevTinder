@@ -1,32 +1,145 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark, cupcake;
+  themes: devtinderlux --default, devtindernight --prefersdark;
 }
 
-/* Apply the new default fonts */
+:root {
+  color-scheme: light;
+  --app-shell: radial-gradient(circle at top left, rgba(255, 194, 209, 0.42), transparent 28%),
+    radial-gradient(circle at top right, rgba(255, 215, 173, 0.58), transparent 24%),
+    linear-gradient(180deg, #fff8f6 0%, #fffdfb 46%, #fff7f3 100%);
+  --app-shell-dark: radial-gradient(circle at top left, rgba(255, 122, 158, 0.18), transparent 28%),
+    radial-gradient(circle at top right, rgba(255, 190, 125, 0.12), transparent 26%),
+    linear-gradient(180deg, #1c1522 0%, #17131d 46%, #120f16 100%);
+  --text-strong: #2c2130;
+  --text-muted: #5a4b61;
+  --soft-surface-bg: rgba(255, 255, 255, 0.76);
+  --soft-surface-border: rgba(255, 255, 255, 0.74);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  font-family: theme("fontFamily.sans");
+  min-height: 100vh;
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  background: var(--app-shell);
+  color: #281f27;
 }
 
-/* Use the mono font for headings to give a code-like feel */
+[data-theme="devtindernight"] body {
+  background: var(--app-shell-dark);
+  color: #fdf4f4;
+}
+
+[data-theme="devtindernight"] {
+  --text-strong: #f7eef8;
+  --text-muted: #d8cade;
+  --soft-surface-bg: rgba(255, 255, 255, 0.12);
+  --soft-surface-border: rgba(255, 255, 255, 0.22);
+}
+
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-family: theme("fontFamily.mono");
+  font-family: "Sora", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.04em;
 }
 
-/* Existing styles */
+#root {
+  min-height: 100vh;
+}
+
 .btn {
-  @apply transition-all duration-200 ease-in-out;
+  @apply transition-all duration-300 ease-out;
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif !important;
 }
 
 .btn:hover {
-  @apply brightness-110 scale-105;
+  transform: translateY(-1px);
 }
 
-.menu li>a.active {
-  @apply bg-primary text-primary-content;
+.menu li > a.active {
+  @apply bg-primary/10 text-primary;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 20px 60px rgba(208, 117, 111, 0.12);
+}
+
+[data-theme="devtindernight"] .glass-panel {
+  background: rgba(35, 28, 40, 0.72);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.premium-card {
+  @apply rounded-[32px] border border-white/60 bg-white/75 shadow-[0_24px_80px_rgba(196,118,120,0.16)] backdrop-blur-xl;
+}
+
+[data-theme="devtindernight"] .premium-card {
+  @apply border-white/10 bg-[#261f2d]/80 shadow-[0_24px_80px_rgba(0,0,0,0.35)];
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.soft-surface {
+  background: var(--soft-surface-bg);
+  border: 1px solid var(--soft-surface-border);
+}
+
+.field-control {
+  width: 100%;
+  color: var(--text-strong) !important;
+  border-color: var(--soft-surface-border) !important;
+  background: var(--soft-surface-bg) !important;
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+  font-family: "Manrope", ui-sans-serif, system-ui, sans-serif !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  -webkit-text-fill-color: var(--text-strong) !important;
+}
+
+.field-control::placeholder {
+  color: color-mix(in oklab, var(--text-muted) 72%, transparent);
+}
+
+.input.field-control,
+.select.field-control,
+.textarea.field-control {
+  font-size: 1rem;
+}
+
+[data-theme="devtindernight"] .input.field-control,
+[data-theme="devtindernight"] .select.field-control,
+[data-theme="devtindernight"] .textarea.field-control {
+  color: #fff3f6 !important;
+  -webkit-text-fill-color: #fff3f6 !important;
+}
+
+input.field-control:-webkit-autofill,
+input.field-control:-webkit-autofill:hover,
+input.field-control:-webkit-autofill:focus,
+input.field-control:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--soft-surface-bg) inset !important;
+  -webkit-text-fill-color: var(--text-strong) !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+[data-theme="devtindernight"] input.field-control:-webkit-autofill,
+[data-theme="devtindernight"] input.field-control:-webkit-autofill:hover,
+[data-theme="devtindernight"] input.field-control:-webkit-autofill:focus,
+[data-theme="devtindernight"] input.field-control:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--soft-surface-bg) inset !important;
+  -webkit-text-fill-color: #fff3f6 !important;
 }
