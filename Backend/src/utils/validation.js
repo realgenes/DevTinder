@@ -1,4 +1,10 @@
 const validator = require("validator");
+const isValidPhotoSource = (value) => {
+  if (!value) return true;
+  const isRemoteUrl = validator.isURL(value);
+  const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(value);
+  return isRemoteUrl || isDataImage;
+};
 
 const validateSignUpData = (req) => {
   const { firstName, lastName, emailId, password } = req.body;
@@ -38,7 +44,7 @@ const validateProfileEditData = (req) => {
     throw new Error("invalid emailId !");
   }
 
-  if (photoUrl && !validator.isURL(photoUrl)) {
+  if (photoUrl && !isValidPhotoSource(photoUrl)) {
     throw new Error("Invalid photoUrl!");
   }
 
