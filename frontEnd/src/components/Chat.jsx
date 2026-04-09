@@ -108,112 +108,143 @@ const Chat = () => {
   };
 
   return (
-    <div className="px-4 lg:px-0 mb-3 mt-4">
-      <div className="flex flex-col h-[calc(100vh-10.5rem)] max-w-4xl mx-auto bg-base-200 shadow-xl rounded-lg">
-        {/* Chat Header */}
-        {receiver ? (
-          <div className="flex items-center p-3 border-b border-base-300">
-            <div className="avatar mr-4">
-              <div className="w-12 rounded-full">
-                <img src={receiver.photoUrl} alt={receiver.firstName} />
+    <div className="grid gap-6 pb-4 xl:grid-cols-[0.86fr_1.14fr]">
+      <section className="premium-card p-6 sm:p-8">
+        <p className="text-sm uppercase tracking-[0.3em] text-base-content/45">
+          Conversation
+        </p>
+        <h1 className="mt-3 text-4xl font-semibold text-balance">
+          A calmer space for real messages.
+        </h1>
+        <p className="mt-4 text-base leading-7 text-base-content/85">
+          DevTinder chat has been reframed like a private lounge: fewer
+          distractions, softer surfaces, and more room for thoughtful replies.
+        </p>
+
+        {receiver && (
+          <div className="soft-surface mt-8 rounded-[30px] p-5">
+            <div className="flex items-center gap-4">
+              <div className="avatar">
+                <div className="w-16 rounded-[22px]">
+                  <img src={receiver.photoUrl} alt={receiver.firstName} />
+                </div>
               </div>
-            </div>
-            <h2 className="text-xl font-bold">
-              {receiver.firstName} {receiver.lastName}
-            </h2>
-          </div>
-        ) : (
-          <div className="p-3 border-b border-base-300 h-[73px] flex items-center">
-            <div className="animate-pulse flex items-center w-full">
-              <div className="rounded-full bg-base-300 h-12 w-12 mr-4"></div>
-              <div className="h-6 bg-base-300 rounded w-1/4"></div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.22em] text-base-content/80">
+                  Talking with
+                </p>
+                <h2 className="mt-1 text-2xl font-semibold">
+                  {receiver.firstName} {receiver.lastName}
+                </h2>
+                <p className="mt-1 text-sm text-base-content/85">
+                  Pick up where the connection started.
+                </p>
+              </div>
             </div>
           </div>
         )}
+      </section>
 
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4">
+      <section className="premium-card flex h-[calc(100vh-11rem)] min-h-[640px] flex-col overflow-hidden">
+        {receiver ? (
+          <div className="border-b border-white/40 px-5 py-4 sm:px-6">
+            <div className="flex items-center gap-4">
+              <div className="avatar">
+                <div className="w-14 rounded-[20px]">
+                  <img src={receiver.photoUrl} alt={receiver.firstName} />
+                </div>
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold">
+                  {receiver.firstName} {receiver.lastName}
+                </h2>
+                <p className="text-sm text-base-content/80">
+                  Real-time chat enabled
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="border-b border-white/40 px-5 py-5 sm:px-6">
+            <div className="h-14 w-48 animate-pulse rounded-[22px] bg-white/50" />
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6">
           {loading ? (
-            <div className="flex justify-center items-center h-full">
+            <div className="flex h-full items-center justify-center">
               <span className="loading loading-spinner loading-lg"></span>
             </div>
           ) : messages.length === 0 ? (
-            <div className="flex justify-center items-center h-full">
-              <p className="text-base-content/60">
-                No messages yet. Start the conversation!
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <div className="grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 text-3xl">
+                ✉
+              </div>
+              <p className="mt-5 text-lg font-semibold">No messages yet</p>
+              <p className="mt-2 max-w-sm text-sm leading-7 text-base-content/85">
+                Start with something simple, thoughtful, and specific. Great
+                conversations rarely need much more.
               </p>
             </div>
           ) : (
             <div className="space-y-4">
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`chat ${
-                    msg.senderId === currentUser?._id
-                      ? "chat-end"
-                      : "chat-start"
-                  }`}
-                >
-                  <div className="chat-image avatar">
-                    <div className="w-10 rounded-full">
-                      <img
-                        alt="User Avatar"
-                        src={
-                          msg.senderId === currentUser?._id
-                            ? currentUser.photoUrl
-                            : receiver?.photoUrl
-                        }
-                      />
+              {messages.map((msg, index) => {
+                const isOwnMessage = msg.senderId === currentUser?._id;
+
+                return (
+                  <div
+                    key={index}
+                    className={`flex ${
+                      isOwnMessage ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-[28px] px-4 py-3 shadow-sm sm:max-w-[68%] ${
+                        isOwnMessage
+                          ? "bg-gradient-to-r from-primary to-secondary text-white"
+                          : "soft-surface text-base-content"
+                      }`}
+                    >
+                      <p className="text-sm leading-7">{msg.message}</p>
+                      <p
+                        className={`mt-2 text-right text-xs ${
+                          isOwnMessage ? "text-white/70" : "text-base-content/80"
+                        }`}
+                      >
+                        {formatTimestamp(msg.createdAt)}
+                      </p>
                     </div>
                   </div>
-                  <div className="chat-bubble flex flex-col">
-                    <span>{msg.message}</span>
-                    <span className="text-xs opacity-50 text-right mt-1">
-                      {formatTimestamp(msg.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
           )}
         </div>
 
-        {/* Message Input Form */}
         <form
           onSubmit={handleSendMessage}
-          className="p-4 bg-base-300 flex items-center gap-4"
+          className="border-t border-white/40 px-4 py-4 sm:px-6"
         >
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            className="input input-bordered w-full"
-            placeholder="Type a message..."
-            aria-label="Message Input"
-          />
-          <button
-            type="submit"
-            className="btn btn-primary btn-circle"
-            aria-label="Send Message"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          <div className="soft-surface flex items-center gap-3 rounded-[28px] p-2">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              className="input field-control h-12 flex-1 border-none bg-transparent shadow-none focus:outline-none"
+              placeholder="Write something thoughtful..."
+              aria-label="Message Input"
+            />
+            <button
+              type="submit"
+              className="btn h-12 min-h-12 rounded-full border-none bg-gradient-to-r from-primary to-secondary px-5 text-white"
+              aria-label="Send Message"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-              />
-            </svg>
-          </button>
+              Send
+            </button>
+          </div>
         </form>
-      </div>
+      </section>
     </div>
   );
 };

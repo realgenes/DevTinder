@@ -2,6 +2,14 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+
+const isValidPhotoSource = (value) => {
+  if (!value) return true;
+  const isRemoteUrl = validator.isURL(value);
+  const isDataImage = /^data:image\/[a-z0-9.+-]+;base64,/i.test(value);
+  return isRemoteUrl || isDataImage;
+};
+
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -28,6 +36,12 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
     },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
     age: {
       type: Number,
       min: [18, "Age must be at least 18"],
@@ -45,7 +59,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "https://sipl.ind.in/wp-content/uploads/2022/07/dummy-user.png",
       validate(value) {
-        if (!validator.isURL(value)) {
+        if (!isValidPhotoSource(value)) {
           throw new Error("invalid photoURL" + value);
         }
       },
